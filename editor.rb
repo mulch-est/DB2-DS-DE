@@ -40,23 +40,41 @@ if File.exists?(filepath)
 
   #Menu navigation begins here
   
-  puts "Press 1 for automatic hex editing"
-  puts "Press 2 for automatic ASCII editing"
+  puts "Press 1 for automatic ASCII editing"
+  puts "Press 2 for automatic hex editing"
   puts "Press any other button to quit"
 
   file_edit_option = gets.chop
 
   if file_edit_option == "1"
+    puts "Please enter the ASCII code you would like to change"
+    replaced_ascii = gets.chop
+    
+    puts "Please enter the ASCII code you would like to replace #{replaced_ascii} with"
+    new_ascii = gets.chop
+    
+    puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
+    ascii_replace_confirmation = gets.chop
+    
+    if ascii_replace_confirmation == "y"
+      asciireplace_filedata = File.read(filepath)
+      asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii, new_ascii)
+      puts "Successfully replaced ascii data..."
+      File.write(filepath, asciireplace_newfiledata)
+      puts "Successfully wrote new data to file..."
+      puts "--ASCII view--"
+      puts "#{asciireplace_newfiledata}"
+    else
+      puts "Exited the program"
+    end
+  elsif file_edit_option == "2"
     puts "Please enter the hex code you would like to change"
-
     replaced_hex = gets.chop
 
     puts "Please enter the hex code you would like to replace #{replaced_hex} with"
-
     new_hex = gets.chop
 
     puts "Replacing all #{replaced_hex} in #{File.basename(filepath)} with #{new_hex}, is this ok? Y/N"
-
     hex_replace_confirmation = gets.chop
 
     if hex_replace_confirmation == "y"
@@ -66,9 +84,7 @@ if File.exists?(filepath)
       File.write(filepath, hexreplace_newfiledata)
       puts "Successfully wrote new data to file..."
       puts "--ASCII view--"
-      puts "newdata: #{hexreplace_newfiledata}"
-      
-
+      puts "#{hexreplace_newfiledata}"
     else
       puts "Exited the program"
     end
