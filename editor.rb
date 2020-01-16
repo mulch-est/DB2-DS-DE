@@ -38,7 +38,11 @@ if File.exists?(filepath)
     puts item
   }
 
-  puts "Press 1 for automatic hex editing, Press any other button to quit"
+  #Menu navigation begins here
+  
+  puts "Press 1 for automatic hex editing"
+  puts "Press 2 for automatic ASCII editing"
+  puts "Press any other button to quit"
 
   file_edit_option = gets.chop
 
