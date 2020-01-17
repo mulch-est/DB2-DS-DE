@@ -58,7 +58,22 @@ if File.exists?(filepath)
       header_filechars = File.size(header_filepath)
       
       if File.exists?(header_filepath)
+        puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+        #print usable headers?
+        puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
+        replace_header = gets.chop
+
+        puts "Please enter the ASCII code you would like to replace in #{replace_header}"
+        new_ascii = gets.chop
         
+        puts "Replacing dialogue in #{replace_header} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
+        ascii_replace_confirmation = gets.chop
+        
+        if ascii_replace_confirmation == "y"
+          #do ascii replace using header
+        else 
+          puts "Exited the program."
+        end
       else
         puts "Could not read the file. Exited the program"
       end
