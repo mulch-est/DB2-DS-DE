@@ -77,16 +77,22 @@ if File.exists?(filepath)
               collecting_header = 2
             end
           end
+          if last_ii == "0" && i != "_" && curr_head.length == 2
+            collecting_header=0
+            curr_head=""
+          end
           last_it = last_ii
           last_ii = last_i
           last_i = i
           if collecting_header > 0
             curr_head = curr_head + i
             if collecting_header == 1 || collecting_header == 2
-              collecting_header = collecting_header - 1
-              if collecting_header == 0
-                headers.push(curr_head)
-                curr_head=""
+              if !headers.include? curr_head
+                collecting_header = collecting_header - 1
+                if collecting_header == 0
+                  headers.push(curr_head)
+                  curr_head=""
+                end
               end
             end
           end
