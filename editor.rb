@@ -2,9 +2,9 @@ def padEnd(input)
   ""+input+" "
 end
 
-puts "Enter the path of the file you would like to read."
+puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
 
-filepath = gets.chop
+filepath = gets.chop #add data/ eventually
 filechars = File.size(filepath)
 
 if File.exists?(filepath)
@@ -38,7 +38,7 @@ if File.exists?(filepath)
     puts item
   }
 
-  #Menu navigation begins here
+  #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
   
   puts "Press 1 for automatic ASCII editing"
   puts "Press 2 for automatic hex editing"
@@ -47,25 +47,42 @@ if File.exists?(filepath)
   file_edit_option = gets.chop
 
   if file_edit_option == "1"
-    puts "Please enter the ASCII code you would like to change"
-    replaced_ascii = gets.chop
+    puts "Would you like to use the chapter header to replace ASCII Y/N"
+    puts "(If you do not, a glitchless game cannot be guaranteed)"
+    ascii_file_edit_option = gets.chop
     
-    puts "Please enter the ASCII code you would like to replace #{replaced_ascii} with"
-    new_ascii = gets.chop
-    
-    puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
-    ascii_replace_confirmation = gets.chop
-    
-    if ascii_replace_confirmation == "y"
-      asciireplace_filedata = File.read(filepath)
-      asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii, new_ascii)
-      puts "Successfully replaced ascii data..."
-      File.write(filepath, asciireplace_newfiledata)
-      puts "Successfully wrote new data to file..."
-      puts "--ASCII view--"
-      puts "#{asciireplace_newfiledata}"
+    if ascii_file_edit_option == "y"
+      puts "Please enter the filepath of the header (ie chapterX_header.str)"
+      
+      header_filepath = gets.chop
+      header_filechars = File.size(header_filepath)
+      
+      if File.exists?(header_filepath)
+        
+      else
+        puts "Could not read the file. Exited the program"
+      end
     else
-      puts "Exited the program"
+      puts "Please enter the ASCII code you would like to change"
+      replaced_ascii = gets.chop
+
+      puts "Please enter the ASCII code you would like to replace #{replaced_ascii} with"
+      new_ascii = gets.chop
+
+      puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
+      ascii_replace_confirmation = gets.chop
+
+      if ascii_replace_confirmation == "y"
+        asciireplace_filedata = File.read(filepath)
+        asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii, new_ascii)
+        puts "Successfully replaced ascii data..."
+        File.write(filepath, asciireplace_newfiledata)
+        puts "Successfully wrote new data to file..."
+        puts "--ASCII view--"
+        puts "#{asciireplace_newfiledata}"
+      else
+        puts "Exited the program"
+      end
     end
   elsif file_edit_option == "2"
     puts "Please enter the hex code you would like to change"
