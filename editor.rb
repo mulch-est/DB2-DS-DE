@@ -60,6 +60,39 @@ if File.exists?(filepath)
       if File.exists?(header_filepath)
         puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
         #print usable headers?
+        header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+        headers = []
+        # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+        last_i = ""
+        last_ii = ""
+        last_it = ""
+        curr_head = ""
+        collecting_header = 0
+        puts header_data
+        header_data.split("").each do |i| #iterates over each character in header_data
+          if i == "0"
+            if curr_head == ""
+              collecting_header = 5
+            elsif last_i == "_" && last_it != "0"
+              collecting_header = 2
+            end
+          end
+          last_it = last_ii
+          last_ii = last_i
+          last_i = i
+          if collecting_header > 0
+            curr_head = curr_head + i
+            if collecting_header == 1 || collecting_header == 2
+              collecting_header = collecting_header - 1
+              if collecting_header == 0
+                headers.push(curr_head)
+                curr_head=""
+              end
+            end
+          end
+          puts "i:#{i}, curr_head:#{curr_head}"
+        end
+        puts "headers: #{headers}"
         puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
         replace_header = gets.chop
 
