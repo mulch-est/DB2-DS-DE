@@ -126,6 +126,7 @@ if File.exists?(filepath)
         #copy-paste begins
         log_data.split("").each do |i| #iterates over each character in log_data
           if i.unpack('H*')[0] == "00" && collecting_log > 0
+            curr_log.slice!(0, 1) #easily removes the u/0000 that starts each dialogue otherwise
             logs.push(curr_log)
             curr_log=""
             collecting_log = 0
