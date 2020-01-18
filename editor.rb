@@ -1,4 +1,4 @@
-def padEnd(input)
+]def padEnd(input)
   ""+input+" "
 end
 
@@ -28,46 +28,54 @@ def replaceAscii(replace_filepath, replaced_ascii, new_ascii)
   puts "#{asciireplace_newfiledata}"
 end
 
-puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
+def start()
+  puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
 
-filepath = gets.chop #add data/ eventually
-filechars = File.size(filepath)
+  filepath = gets.chop #add data/ eventually
 
-if File.exists?(filepath)
-  puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
+  if File.exists?(filepath)
+    filechars = File.size(filepath)
+    puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
 
-  puts "--ASCII view--"
-  file_data = File.foreach(filepath) { |line| puts line }
+    puts "--ASCII view--"
+    file_data = File.foreach(filepath) { |line| puts line }
 
-  puts "--HEX view--"
+    puts "--HEX view--"
 
-  file_readable_hexdata = [];
-  hexline=""
-  number = 0 #used for counting where the next hex pair should be placed
+    file_readable_hexdata = [];
+    hexline=""
+    number = 0 #used for counting where the next hex pair should be placed
 
-  file_hexdata = File.open(filepath).readlines
-  file_hexdata.each {|readline|
-    readline.unpack('H*')[0].scan(/../).each {|item|
-      hexline = hexline + padEnd(item)
-      number = number + 1
-      #after the 16th hexpair, start next line
-      if number == 16
-        file_readable_hexdata.push(hexline)
-        hexline=""
-        number = 0
-      end
+    file_hexdata = File.open(filepath).readlines
+    file_hexdata.each {|readline|
+      readline.unpack('H*')[0].scan(/../).each {|item|
+        hexline = hexline + padEnd(item)
+        number = number + 1
+        #after the 16th hexpair, start next line
+        if number == 16
+          file_readable_hexdata.push(hexline)
+          hexline=""
+          number = 0
+        end
+      }
     }
-  }
-  file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
+    file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
 
-  file_readable_hexdata.each { |item|
-    puts item
-  }
+    file_readable_hexdata.each { |item|
+      puts item
+    }
+    #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
+    menu(filepath, filechars)
+  else
+    puts "Your file at #{filepath} could not be located. Please try again"
+    start()
+  end
+end
 
-  #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
-
+def menu(filepath, filechars)
   puts "Press 1 for automatic ASCII editing"
   puts "Press 2 for automatic hex editing"
+  puts "Press 5 to change the dialogue file"
   puts "Press any other button to quit"
 
   file_edit_option = gets.chop
@@ -205,7 +213,7 @@ if File.exists?(filepath)
       else
         puts "Could not read the file. Exited the program"
       end
-    else
+    else #non-header auto ascii replace
       puts "Please enter the ASCII code you would like to change"
       replaced_ascii = gets.chop
 
@@ -242,9 +250,11 @@ if File.exists?(filepath)
     else
       puts "Exited the program"
     end
+  elsif file_edit_option == "5"
+    start()
   else
-    puts "Exited the program."
+    puts "No such option. Exited the program."
   end
-else
-  puts "Your file could not be located. Exited the program."
 end
+
+start()
