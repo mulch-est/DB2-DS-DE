@@ -39,7 +39,7 @@ if File.exists?(filepath)
   }
 
   #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
-  
+
   puts "Press 1 for automatic ASCII editing"
   puts "Press 2 for automatic hex editing"
   puts "Press any other button to quit"
@@ -48,15 +48,15 @@ if File.exists?(filepath)
 
   if file_edit_option == "1"
     puts "Would you like to use the chapter header to replace ASCII Y/N"
-    puts "(If you do not, a glitchless game cannot be guaranteed)"
+    puts "(If you do not, glitchless dialogue cannot be guaranteed)"
     ascii_file_edit_option = gets.chop
-    
+
     if ascii_file_edit_option == "y"
       puts "Please enter the filepath of the header (ie chapterX_header.str)"
-      
+
       header_filepath = gets.chop
       header_filechars = File.size(header_filepath)
-      
+
       if File.exists?(header_filepath)
         puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
         #print usable headers?
@@ -96,21 +96,87 @@ if File.exists?(filepath)
               end
             end
           end
-          puts "i:#{i}, curr_head:#{curr_head}"
+          #puts "i:#{i}, curr_head:#{curr_head}"
         end
         puts "headers: #{headers}"
         puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
         replace_header = gets.chop
+        replace_index = -1
+        headers.each { |i|
+          replace_index = replace_index + 1
+          if i == replace_header
+            break
+          end
+        }
+        #puts "Replacing dialogue ##{replace_index}"
+        #go through dialogue, match one to header, and get character limit from it's "spacer tag"
+        log_data = File.binread(filepath) #doesn't stop at 1A on Windows if using binread
+        logs = []
+        charlims = []
+        last_i = ""
+        last_ii = ""
+        last_it = ""
+        curr_log = ""
+        curr_loghead = ""
+        collecting_log = 0
+        collecting_loghead = 0
 
+        # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
+        #copy-paste begins
+        log_data.split("").each do |i| #iterates over each character in log_data
+          if i.unpack('H*')[0] == "00" && collecting_log > 0
+            logs.push(curr_log)
+            curr_log=""
+            collecting_log = 0
+          end
+          if i.unpack('H*')[0] == "00"
+            if last_i == "00"
+              curr_loghead = ""
+            elsif curr_loghead == "" && collecting_log == 0
+              collecting_loghead = 5
+            end
+          end
+          if last_i == "00" && i.unpack('H*')[0] != "00" && curr_loghead.length == 2
+            charlims.push((i.unpack('H*')[0]).to_i(16))
+          end
+          if last_i != "00" && i.unpack('H*')[0] == "00" && curr_loghead.length == 4
+            collecting_log=5
+            collecting_loghead=0
+            curr_log=""
+          end
+          last_it = last_ii
+          last_ii = last_i
+          if collecting_loghead > 0
+            last_i = i.unpack('H*')[0]
+            curr_loghead = curr_loghead + i.unpack('H*')[0]
+          elsif collecting_log > 0
+            last_i = i
+            curr_log = curr_log + i
+            if collecting_log == 1 || collecting_log == 2
+              if !logs.include? curr_log
+                collecting_log = collecting_log - 1
+                if collecting_log == 0
+                  logs.push(curr_log)
+                  curr_log=""
+                end
+              end
+            end
+          end
+          puts "i:#{i}, curr_loghead:#{curr_loghead}, curr_log:#{curr_log}, col_l:#{collecting_log}, col_lh:#{collecting_loghead}"
+        end
+        puts "charlims: #{charlims}"
+        puts "logs: #{logs}"
+        #copy-paste ends
         puts "Please enter the ASCII code you would like to replace in #{replace_header}"
+        puts "Limit is #{} chars, enter less: excess is padded with spaces, enter more: excess is deleted"
         new_ascii = gets.chop
-        
+
         puts "Replacing dialogue in #{replace_header} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
         ascii_replace_confirmation = gets.chop
-        
+
         if ascii_replace_confirmation == "y"
           #do ascii replace using header
-        else 
+        else
           puts "Exited the program."
         end
       else
