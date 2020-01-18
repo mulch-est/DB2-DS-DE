@@ -112,6 +112,7 @@ if File.exists?(filepath)
         #go through dialogue, match one to header, and get character limit from it's "spacer tag"
         log_data = File.binread(filepath) #doesn't stop at 1A on Windows if using binread
         logs = []
+        log_heads = []
         charlims = []
         last_i = ""
         last_ii = ""
@@ -119,7 +120,7 @@ if File.exists?(filepath)
         curr_log = ""
         curr_loghead = ""
         collecting_log = 0
-        collecting_loghead = 0
+        collecting_loghead = 5
 
         # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
         #copy-paste begins
@@ -139,10 +140,11 @@ if File.exists?(filepath)
           if last_i == "00" && i.unpack('H*')[0] != "00" && curr_loghead.length == 2
             charlims.push((i.unpack('H*')[0]).to_i(16))
           end
-          if last_i != "00" && i.unpack('H*')[0] == "00" && curr_loghead.length == 4
+          if last_i != "00" && i.unpack('H*')[0] == "00" && curr_loghead.length == 8
             collecting_log=5
             collecting_loghead=0
             curr_log=""
+            curr_loghead=""
           end
           last_it = last_ii
           last_ii = last_i
@@ -152,18 +154,10 @@ if File.exists?(filepath)
           elsif collecting_log > 0
             last_i = i
             curr_log = curr_log + i
-            if collecting_log == 1 || collecting_log == 2
-              if !logs.include? curr_log
-                collecting_log = collecting_log - 1
-                if collecting_log == 0
-                  logs.push(curr_log)
-                  curr_log=""
-                end
-              end
-            end
           end
           puts "i:#{i}, curr_loghead:#{curr_loghead}, curr_log:#{curr_log}, col_l:#{collecting_log}, col_lh:#{collecting_loghead}"
         end
+        puts "log_heads: #{log_heads}"
         puts "charlims: #{charlims}"
         puts "logs: #{logs}"
         #copy-paste ends
