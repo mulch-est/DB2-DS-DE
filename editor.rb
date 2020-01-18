@@ -2,6 +2,32 @@ def padEnd(input)
   ""+input+" "
 end
 
+def padTo(num, input)
+  if input.length > num
+    while input.length > num
+      input.chop
+    end
+    return input
+  elsif input.length < num
+    while input.length < num
+      input = input + " "
+    end
+    return input
+  else
+    return input
+  end
+end
+
+def replaceAscii(replace_filepath, replaced_ascii, new_ascii)
+  asciireplace_filedata = File.read(replace_filepath)
+  asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii.to_s, new_ascii.to_s)
+  puts "Successfully replaced ascii data..."
+  File.write(replace_filepath, asciireplace_newfiledata)
+  puts "Successfully wrote new data to file..."
+  puts "--ASCII view--"
+  puts "#{asciireplace_newfiledata}"
+end
+
 puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
 
 filepath = gets.chop #add data/ eventually
@@ -48,7 +74,7 @@ if File.exists?(filepath)
 
   if file_edit_option == "1"
     puts "Would you like to use the chapter header to replace ASCII Y/N"
-    puts "(If you do not, glitchless dialogue cannot be guaranteed)"
+    puts "(Using the header is less likely to glitch the game, although it will not work for chapter 7)"
     ascii_file_edit_option = gets.chop
 
     if ascii_file_edit_option == "y"
@@ -156,21 +182,23 @@ if File.exists?(filepath)
             last_i = i
             curr_log = curr_log + i
           end
-          puts "i:#{i}, curr_loghead:#{curr_loghead}, curr_log:#{curr_log}, col_l:#{collecting_log}, col_lh:#{collecting_loghead}"
+          #puts "i:#{i}, curr_loghead:#{curr_loghead}, curr_log:#{curr_log}, col_l:#{collecting_log}, col_lh:#{collecting_loghead}"
         end
         puts "log_heads: #{log_heads}"
-        puts "charlims: #{charlims}"
+        #puts "charlims: #{charlims}"
         puts "logs: #{logs}"
         #copy-paste ends
         puts "Please enter the ASCII code you would like to replace in #{replace_header}"
-        puts "Limit is #{} chars, enter less: excess is padded with spaces, enter more: excess is deleted"
+        puts "Limit is #{charlims[replace_index]} chars, enter less: excess is padded with spaces, enter more: excess is deleted"
         new_ascii = gets.chop
 
-        puts "Replacing dialogue in #{replace_header} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
+        puts "Replacing dialogue in #{replace_header} in #{File.basename(filepath)} with #{new_ascii} (#{new_ascii.length} chars), is this ok?  Y/N"
         ascii_replace_confirmation = gets.chop
 
         if ascii_replace_confirmation == "y"
-          #do ascii replace using header
+          puts replace_index
+          puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
+          replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
         else
           puts "Exited the program."
         end
@@ -188,13 +216,7 @@ if File.exists?(filepath)
       ascii_replace_confirmation = gets.chop
 
       if ascii_replace_confirmation == "y"
-        asciireplace_filedata = File.read(filepath)
-        asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii, new_ascii)
-        puts "Successfully replaced ascii data..."
-        File.write(filepath, asciireplace_newfiledata)
-        puts "Successfully wrote new data to file..."
-        puts "--ASCII view--"
-        puts "#{asciireplace_newfiledata}"
+        replaceAscii(filepath, replaced_ascii, new_ascii)
       else
         puts "Exited the program"
       end
