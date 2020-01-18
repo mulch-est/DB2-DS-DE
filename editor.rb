@@ -1,4 +1,4 @@
-]def padEnd(input)
+def padEnd(input)
   ""+input+" "
 end
 
@@ -36,34 +36,6 @@ def start()
   if File.exists?(filepath)
     filechars = File.size(filepath)
     puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
-
-    puts "--ASCII view--"
-    file_data = File.foreach(filepath) { |line| puts line }
-
-    puts "--HEX view--"
-
-    file_readable_hexdata = [];
-    hexline=""
-    number = 0 #used for counting where the next hex pair should be placed
-
-    file_hexdata = File.open(filepath).readlines
-    file_hexdata.each {|readline|
-      readline.unpack('H*')[0].scan(/../).each {|item|
-        hexline = hexline + padEnd(item)
-        number = number + 1
-        #after the 16th hexpair, start next line
-        if number == 16
-          file_readable_hexdata.push(hexline)
-          hexline=""
-          number = 0
-        end
-      }
-    }
-    file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
-
-    file_readable_hexdata.each { |item|
-      puts item
-    }
     #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
     menu(filepath, filechars)
   else
@@ -75,6 +47,8 @@ end
 def menu(filepath, filechars)
   puts "Press 1 for automatic ASCII editing"
   puts "Press 2 for automatic hex editing"
+  puts "Press 3 to view ASCII file data"
+  puts "Press 4 to view hex file data"
   puts "Press 5 to change the dialogue file"
   puts "Press any other button to quit"
 
@@ -250,6 +224,39 @@ def menu(filepath, filechars)
     else
       puts "Exited the program"
     end
+  elsif file_edit_option == "3"
+    #viewAscii()
+    puts "--ASCII view--"
+    file_data = File.foreach(filepath) { |line| puts line }
+    puts "--ASCII view--"
+    menu(filepath, filechars)
+  elsif file_edit_option == "4"
+    #viewHex()
+    puts "--HEX view--"
+    file_readable_hexdata = [];
+    hexline=""
+    number = 0 #used for counting where the next hex pair should be placed
+
+    file_hexdata = File.open(filepath).readlines
+    file_hexdata.each {|readline|
+      readline.unpack('H*')[0].scan(/../).each {|item|
+        hexline = hexline + padEnd(item)
+        number = number + 1
+        #after the 16th hexpair, start next line
+        if number == 16
+          file_readable_hexdata.push(hexline)
+          hexline=""
+          number = 0
+        end
+      }
+    }
+    file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
+
+    file_readable_hexdata.each { |item|
+      puts item
+    }
+    puts "--HEX view--"
+    menu(filepath, filechars)
   elsif file_edit_option == "5"
     start()
   else
