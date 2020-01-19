@@ -6,7 +6,7 @@ Clone or download the repository. [Get RubyInstaller](https://rubyinstaller.org/
 The version should not matter too much, but **Ruby+Devkit 2.6.5-1 (x64)** was used during testing.
 
 ### To Use
-Extract the files from your de blob 2 (DS) .nds file via a program such as dslazy or nitroexplorer, the dialogue is inside the **string_tables** folder. This program can edit the dialogue inside of the chapterX_language.str files, and can use the chapterX_header.str files to help.
+Extract the files from your de blob 2 (DS) .nds file. Inside the **string_tables** folder you will find many .str files containing all of the game's dialogue. This program can edit the dialogue inside of the chapterX_language.str files, and can use the chapterX_header.str files to help do so (sort of).
 
 ### Functionality
 This application has very rudimentary systems for automatic editing of both ASCII and hex code, as well as the limited ability to edit ASCII code from a header ID rather than the original document ASCII (does not work for chapter 7, at least not yet).
