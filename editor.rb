@@ -102,10 +102,10 @@ def ascii_header_menu(filepath, header_filepath, headers, replace_header)
       #puts replace_index
       replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
       puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
-      menu(filepath, filechars)
+      menu(filepath)
     else
       puts "Replacement was not confirmed."
-      menu(filepath, filechars)
+      menu(filepath)
     end
   else
     "Invalid header. Please try again."
@@ -175,14 +175,14 @@ def start()
     filechars = File.size(filepath)
     puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
     #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
-    menu(filepath, filechars)
+    menu(filepath)
   else
     puts "Your file at (#{filepath}) could not be located. Please try again"
     start()
   end
 end
 
-def menu(filepath, filechars)
+def menu(filepath)
   puts "Press 1 for automatic ASCII editing"
   puts "Press 2 for automatic hex editing"
   puts "Press 3 to view ASCII file data"
@@ -216,7 +216,7 @@ def menu(filepath, filechars)
         replaceAscii(filepath, replaced_ascii, new_ascii)
       else
         puts "Replacement was not confirmed."
-        menu(filepath, filechars)
+        menu(filepath)
       end
     end
   elsif file_edit_option == "2"
@@ -239,7 +239,7 @@ def menu(filepath, filechars)
       puts "#{hexreplace_newfiledata}"
     else
       puts "Replacement was not confirmed."
-      menu(filepath, filechars)
+      menu(filepath)
     end
   elsif file_edit_option == "3"
     #viewAscii()
@@ -248,7 +248,7 @@ def menu(filepath, filechars)
     file_data = File.binread(filepath)
     puts file_data
     puts "--ASCII view--"
-    menu(filepath, filechars)
+    menu(filepath)
   elsif file_edit_option == "4"
     #viewHex()
     puts "--HEX view--"
@@ -273,7 +273,7 @@ def menu(filepath, filechars)
     }
 
     puts "--HEX view--"
-    menu(filepath, filechars)
+    menu(filepath)
   elsif file_edit_option == "5"
     start()
   else
@@ -282,7 +282,7 @@ def menu(filepath, filechars)
     if answer == "y" || answer == "Y"
       puts "Exited the program."
     else
-      menu(filepath, filechars)
+      menu(filepath)
     end
   end
 end
