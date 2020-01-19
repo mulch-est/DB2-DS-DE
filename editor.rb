@@ -244,7 +244,9 @@ def menu(filepath, filechars)
   elsif file_edit_option == "3"
     #viewAscii()
     puts "--ASCII view--"
-    file_data = File.foreach(filepath) { |line| puts line }
+    #file_data = File.foreach(filepath) { |line| puts line }
+    file_data = File.binread(filepath)
+    puts file_data
     puts "--ASCII view--"
     menu(filepath, filechars)
   elsif file_edit_option == "4"
@@ -253,25 +255,23 @@ def menu(filepath, filechars)
     file_readable_hexdata = [];
     hexline=""
     number = 0 #used for counting where the next hex pair should be placed
-
-    file_hexdata = File.open(filepath).readlines
-    file_hexdata.each {|readline|
-      readline.unpack('H*')[0].scan(/../).each {|item|
-        hexline = hexline + padEnd(item)
-        number = number + 1
-        #after the 16th hexpair, start next line
-        if number == 16
-          file_readable_hexdata.push(hexline)
-          hexline=""
-          number = 0
-        end
-      }
+    file_hexdata = File.binread(filepath)
+    file_hexdata.unpack('H*')[0].scan(/../).each {|item|
+      hexline = hexline + padEnd(item)
+      number = number + 1
+      #after the 16th hexpair, start next line
+      if number == 16
+        file_readable_hexdata.push(hexline)
+        hexline=""
+        number = 0
+      end
     }
     file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
 
     file_readable_hexdata.each { |item|
       puts item
     }
+
     puts "--HEX view--"
     menu(filepath, filechars)
   elsif file_edit_option == "5"
