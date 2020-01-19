@@ -39,7 +39,7 @@ def start()
     #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
     menu(filepath, filechars)
   else
-    puts "Your file at #{filepath} could not be located. Please try again"
+    puts "Your file at (#{filepath}) could not be located. Please try again"
     start()
   end
 end
@@ -59,7 +59,7 @@ def menu(filepath, filechars)
     puts "(Using the header is less likely to glitch the game, although it will not work for chapter 7)"
     ascii_file_edit_option = gets.chop
 
-    if ascii_file_edit_option == "y"
+    if ascii_file_edit_option == "y" || ascii_file_edit_option == "Y"
       puts "Please enter the filepath of the header (ie chapterX_header.str)"
 
       header_filepath = gets.chop
@@ -177,7 +177,7 @@ def menu(filepath, filechars)
         puts "Replacing dialogue in #{replace_header} in #{File.basename(filepath)} with #{new_ascii} (#{new_ascii.length} chars), is this ok?  Y/N"
         ascii_replace_confirmation = gets.chop
 
-        if ascii_replace_confirmation == "y"
+        if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
           puts replace_index
           puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
           replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
@@ -197,7 +197,7 @@ def menu(filepath, filechars)
       puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
       ascii_replace_confirmation = gets.chop
 
-      if ascii_replace_confirmation == "y"
+      if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
         replaceAscii(filepath, replaced_ascii, new_ascii)
       else
         puts "Exited the program"
@@ -213,7 +213,7 @@ def menu(filepath, filechars)
     puts "Replacing all #{replaced_hex} in #{File.basename(filepath)} with #{new_hex}, is this ok? Y/N"
     hex_replace_confirmation = gets.chop
 
-    if hex_replace_confirmation == "y"
+    if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
       hexreplace_filedata = File.read(filepath)
       hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
       puts "Successfully replaced hex data..."
@@ -260,7 +260,13 @@ def menu(filepath, filechars)
   elsif file_edit_option == "5"
     start()
   else
-    puts "No such option. Exited the program."
+    puts "Are you sure you want to quit? Y/N"
+    answer = gets.chop
+    if answer == "y" || answer == "Y"
+      puts "Exited the program."
+    else
+      menu(filepath, filechars)
+    end
   end
 end
 
