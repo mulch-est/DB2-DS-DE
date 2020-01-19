@@ -182,10 +182,12 @@ def menu(filepath, filechars)
           puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
           replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
         else
-          puts "Exited the program."
+          puts "Replacement was not confirmed."
+          menu(filepath, filechars)
         end
       else
-        puts "Could not read the file. Exited the program"
+        puts "Could not read the file."
+        menu(filepath, filechars)
       end
     else #non-header auto ascii replace
       puts "Please enter the ASCII code you would like to change"
@@ -200,7 +202,8 @@ def menu(filepath, filechars)
       if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
         replaceAscii(filepath, replaced_ascii, new_ascii)
       else
-        puts "Exited the program"
+        puts "Replacement was not confirmed."
+        menu(filepath, filechars)
       end
     end
   elsif file_edit_option == "2"
@@ -222,7 +225,8 @@ def menu(filepath, filechars)
       puts "--ASCII view--"
       puts "#{hexreplace_newfiledata}"
     else
-      puts "Exited the program"
+      puts "Replacement was not confirmed."
+      menu(filepath, filechars)
     end
   elsif file_edit_option == "3"
     #viewAscii()
