@@ -28,52 +28,8 @@ def replaceAscii(replace_filepath, replaced_ascii, new_ascii)
   puts "#{asciireplace_newfiledata}"
 end
 
-def ascii_header_replace_menu(filepath, header_filepath)
-  if File.exists?(header_filepath)
-    header_filechars = File.size(header_filepath)
-    puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
-
-    header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
-    headers = []
-    # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
-    last_i = ""
-    last_ii = ""
-    last_it = ""
-    curr_head = ""
-    collecting_header = 0
-    #puts header_data
-    header_data.split("").each do |i| #iterates over each character in header_data
-      if i == "0"
-        if curr_head == ""
-          collecting_header = 5
-        elsif last_i == "_" && last_it != "0"
-          collecting_header = 2
-        end
-      end
-      if last_ii == "0" && i != "_" && curr_head.length == 2
-        collecting_header=0
-        curr_head=""
-      end
-      last_it = last_ii
-      last_ii = last_i
-      last_i = i
-      if collecting_header > 0
-        curr_head = curr_head + i
-        if collecting_header == 1 || collecting_header == 2
-          if !headers.include? curr_head
-            collecting_header = collecting_header - 1
-            if collecting_header == 0
-              headers.push(curr_head)
-              curr_head=""
-            end
-          end
-        end
-      end
-      #puts "i:#{i}, curr_head:#{curr_head}"
-    end
-    puts "headers: #{headers}"
-    puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
-    replace_header = gets.chop
+def ascii_header_menu(filepath, header_filepath, headers, replace_header)
+  if headers.include? replace_header
     replace_index = -1
     headers.each { |i|
       replace_index = replace_index + 1
@@ -131,9 +87,9 @@ def ascii_header_replace_menu(filepath, header_filepath)
       end
       #puts "i:#{i}, curr_loghead:#{curr_loghead}, curr_log:#{curr_log}, col_l:#{collecting_log}, col_lh:#{collecting_loghead}"
     end
-    puts "log_heads: #{log_heads}"
+    #puts "log_heads: #{log_heads}" #blank?
     #puts "charlims: #{charlims}"
-    puts "logs: #{logs}"
+    #puts "logs: #{logs}"
     #copy-paste ends
     puts "Please enter the ASCII code you would like to replace in #{replace_header}"
     puts "Limit is #{charlims[replace_index]} chars, enter less: excess is padded with spaces, enter more: excess is deleted"
@@ -143,13 +99,67 @@ def ascii_header_replace_menu(filepath, header_filepath)
     ascii_replace_confirmation = gets.chop
 
     if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
-      puts replace_index
-      puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
+      #puts replace_index
       replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
+      puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
+      menu(filepath, filechars)
     else
       puts "Replacement was not confirmed."
       menu(filepath, filechars)
     end
+  else
+    "Invalid header. Please try again."
+    ascii_header_menu(filepath, header_filepath, headers, gets.chop)
+  end
+end
+
+def ascii_header_replace_menu(filepath, header_filepath)
+  if File.exists?(header_filepath)
+    header_filechars = File.size(header_filepath)
+    puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+
+    header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+    headers = []
+    # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+    last_i = ""
+    last_ii = ""
+    last_it = ""
+    curr_head = ""
+    collecting_header = 0
+    #puts header_data
+    header_data.split("").each do |i| #iterates over each character in header_data
+      if i == "0"
+        if curr_head == ""
+          collecting_header = 5
+        elsif last_i == "_" && last_it != "0"
+          collecting_header = 2
+        end
+      end
+      if last_ii == "0" && i != "_" && curr_head.length == 2
+        collecting_header=0
+        curr_head=""
+      end
+      last_it = last_ii
+      last_ii = last_i
+      last_i = i
+      if collecting_header > 0
+        curr_head = curr_head + i
+        if collecting_header == 1 || collecting_header == 2
+          if !headers.include? curr_head
+            collecting_header = collecting_header - 1
+            if collecting_header == 0
+              headers.push(curr_head)
+              curr_head=""
+            end
+          end
+        end
+      end
+      #puts "i:#{i}, curr_head:#{curr_head}"
+    end
+    puts "headers: #{headers}"
+    puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
+    replace_header = gets.chop
+    ascii_header_menu(filepath, header_filepath, headers, replace_header)
   else
     puts "Could not read the file."
     ascii_header_replace_menu(filepath, gets.chop)
