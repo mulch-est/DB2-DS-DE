@@ -188,6 +188,7 @@ def menu(filepath)
   puts "Press 3 to view ASCII file data"
   puts "Press 4 to view hex file data"
   puts "Press 5 to change the dialogue file"
+  puts "Press 6 to change dialogue cameo"
   puts "Press any other button to quit"
 
   file_edit_option = gets.chop
@@ -276,6 +277,63 @@ def menu(filepath)
     menu(filepath)
   elsif file_edit_option == "5"
     start()
+  elsif file_edit_option == "6"
+    puts "Please enter the filepath of the command file (ie chapter1_command.str)"
+    command_filepath = gets.chop
+
+    if File.exists?(command_filepath)
+      #puts "Would you like to use the chapter header to replace ASCII Y/N"
+      #puts "(Using the header will not work for chapter 7)"
+      #ascii_file_edit_option = gets.chop
+
+      #find correct "spacer tag" and replace second value in the command file
+    command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
+
+    spacers = []
+    last_i = ""
+    last_ii = ""
+    last_it = ""
+    curr_spacer = ""
+    aVal = ""
+    bVal = ""
+    collect = 1
+      #begin copy-paste
+      # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
+    #copy-paste begins
+    command_data.split("").each do |i| #iterates over each character in log_data
+      if i.unpack('H*')[0] == "00"
+        if last_i == "00"
+          curr_spacer = ""
+        end
+      end
+      if i.unpack('H*')[0] != "00"
+        if last_i != "00"
+          curr_spacer = ""
+          collect = 0
+        end
+      end
+      if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
+        spacers.push(curr_spacer)
+        curr_spacer=""
+      end
+      last_it = last_ii
+      last_ii = last_i
+      last_i = i.unpack('H*')[0]
+      if collect == 1
+        curr_spacer = curr_spacer + i.unpack('H*')[0]
+      end
+      collect = 1
+      #puts "i:#{i}, cs:#{curr_spacer}"
+    end
+    puts "s: #{spacers}"
+    #^returns 00XX00YY
+    #copy-paste ends
+      #end copy-paste
+      menu(filepath)
+    else 
+      put "Could not read the file at (#{command_filepath})"
+      menu(filepath) #<<<change later
+    end
   else
     puts "Are you sure you want to quit? Y/N"
     answer = gets.chop
