@@ -287,6 +287,78 @@ def menu(filepath)
       #ascii_file_edit_option = gets.chop
 
       #find correct "spacer tag" and replace second value in the command file
+
+puts "Enter header path to do the swappage yah?"
+      header_filepath = gets.chop
+      #create def to save on file inputs?
+
+#copy-paste begins
+      if File.exists?(header_filepath)
+      header_filechars = File.size(header_filepath)
+      puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+
+    header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+    headers = []
+    # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+    last_i = ""
+    last_ii = ""
+    last_it = ""
+    curr_head = ""
+    collecting_header = 0
+    #puts header_data
+    header_data.split("").each do |i| #iterates over each character in header_data
+      if i == "0"
+        if curr_head == ""
+          collecting_header = 5
+        elsif last_i == "_" && last_it != "0"
+          collecting_header = 2
+        end
+      end
+      if last_ii == "0" && i != "_" && curr_head.length == 2
+        collecting_header=0
+        curr_head=""
+      end
+      last_it = last_ii
+      last_ii = last_i
+      last_i = i
+      if collecting_header > 0
+        curr_head = curr_head + i
+        if collecting_header == 1 || collecting_header == 2
+          if !headers.include? curr_head
+            collecting_header = collecting_header - 1
+            if collecting_header == 0
+              headers.push(curr_head)
+              curr_head=""
+            end
+          end
+        end
+      end
+      #puts "i:#{i}, curr_head:#{curr_head}"
+    end
+    #puts "headers: #{headers}"
+    #puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
+    #replace_header = gets.chop
+    #ascii_header_menu(filepath, header_filepath, headers, replace_header)
+  else
+    #puts "Could not read the file."
+    #ascii_header_replace_menu(filepath, gets.chop)
+  end
+
+      #NOW, get headers and use them as index referencer, similar to auto-ascii replace
+
+      #menu(filepath)
+    #else 
+      #put "Could not read the file at (#{command_filepath})"
+      #menu(filepath) #<<<change later
+    #end
+    puts "headers: #{headers}"
+puts "Pick the header, ok?"
+picked_header = gets.chop
+#^ save for wrong header inputs
+
+puts "Pick the cameo, yahear?"
+picked_cameo = gets.chop
+
       command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
 
       spacers = []
@@ -327,22 +399,43 @@ def menu(filepath)
       #^returns 00XX00YY
       #end copy-paste
 
-      #NOW, get headers and use them as index referencer, similar to auto-ascii replace
+      
 
-      menu(filepath)
-    else 
-      put "Could not read the file at (#{command_filepath})"
-      menu(filepath) #<<<change later
-    end
+#replace hex of spacers[headernum] to 00XX00ZZ(00)
+replace_index = -1
+    headers.each { |i|
+      replace_index = replace_index + 1
+      if i == picked_header
+        break
+      end
+    }
+replaced_hex = spacers[replace_index]
+new_hex = spacers[replace_index][0, 6] + picked_cameo
+
+puts "rh: #{replaced_hex}, nh: #{new_hex}"
+
+hexreplace_filedata = File.read(command_filepath)
+      hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
+      #^this replaces all, we need to replace just one
+      puts "Successfully replaced hex data..."
+      File.write(command_filepath, hexreplace_newfiledata)
+      puts "Successfully wrote new data to file..."
+      #puts "--ASCII view--"
+      #puts "#{hexreplace_newfiledata}"
+
+#^that should be func
+  puts "Ding!"
+  menu(filepath)
+end
   else
-    puts "Are you sure you want to quit? Y/N"
-    answer = gets.chop
-    if answer == "y" || answer == "Y"
-      puts "Exited the program."
-    else
-      menu(filepath)
-    end
+   puts "my bad"
+    #answer = gets.chop
+    #if answer == "y" || answer == "Y"
+     # puts "Exited the program."
+    ##  menu(filepath)
+    
   end
+  #^end copy-paste
 end
 
 start()
