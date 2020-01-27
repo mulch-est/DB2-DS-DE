@@ -166,6 +166,164 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
+def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, headers)
+  replace_index = -1
+  headers.each { |i|
+    replace_index = replace_index + 1
+    if i == picked_header
+      break
+    end
+  }
+  #puts "got replace_index of #{replace_index}"
+  command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
+
+  spacers = []
+  last_i = ""
+  last_ii = ""
+  last_it = ""
+  curr_spacer = ""
+  collect = 1
+  num = 0
+  command_new_data = "";
+  # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
+  command_data.split("").each do |i| #iterates over each character in command_data
+    command_new_data = command_new_data + i;
+    if i.unpack('H*')[0] == "00"
+      if last_i == "00"
+        curr_spacer = ""
+      end
+    end
+    if i.unpack('H*')[0] != "00"
+      if last_i != "00"
+        curr_spacer = ""
+        collect = 0
+      end
+    end
+    if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
+      if spacers.length == replace_index
+        #writes over file while reading for spacers
+        puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
+        puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
+        command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
+      end
+      spacers.push(curr_spacer)
+      curr_spacer=""
+    end
+    last_it = last_ii
+    last_ii = last_i
+    last_i = i.unpack('H*')[0]
+    if collect == 1
+      curr_spacer = curr_spacer + i.unpack('H*')[0]
+    end
+    collect = 1
+    num = num + 1
+    #puts "i:#{i}, cs:#{curr_spacer}"
+  end
+  #puts "s: #{spacers}"
+  #^returns 00XX00YY items
+  #puts command_new_data.unpack('H*')[0]
+
+  File.write(command_filepath, command_new_data)
+  puts "Replaced cameo. (main file is now command file)"
+  menu(command_filepath)
+end
+
+def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
+  puts "Are you sure you want to change the cameo at #{picked_header} to #{picked_cameo} in #{File.basename(command_filepath)}? Y/N"
+  confirm = gets.chop
+  if confirm == "y" || confirm == "Y"
+    six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, headers)
+  else
+    "Did not confirm. (init file replaced with command)"
+    menu(command_filepath)
+  end
+end
+
+def six_picked_header(command_filepath, header_filepath, picked_header, headers)
+  puts "Please enter your preferred cameo (ie. 07)"
+  picked_cameo = gets.chop
+  #should check valid cameo here, but since a list has not yet been procured, advance.
+  six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
+end
+
+def six_header(command_filepath, header_filepath)
+  header_filechars = File.size(header_filepath)
+  puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+  #produce header list
+  header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+  headers = []
+  # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+  last_i = ""
+  last_ii = ""
+  last_it = ""
+  curr_head = ""
+  collecting_header = 0
+  #get headers from file
+  header_data.split("").each do |i| #iterates over each character in header_data
+    if i == "0"
+      if curr_head == ""
+        collecting_header = 5
+      elsif last_i == "_" && last_it != "0"
+        collecting_header = 2
+      end
+    end
+    if last_ii == "0" && i != "_" && curr_head.length == 2
+      collecting_header=0
+      curr_head=""
+    end
+    last_it = last_ii
+    last_ii = last_i
+    last_i = i
+    if collecting_header > 0
+      curr_head = curr_head + i
+      if collecting_header == 1 || collecting_header == 2
+        if !headers.include? curr_head
+          collecting_header = collecting_header - 1
+          if collecting_header == 0
+            headers.push(curr_head)
+            curr_head=""
+          end
+        end
+      end
+    end
+    #puts "i:#{i}, curr_head:#{curr_head}"
+  end
+  #got headers
+  puts "headers: #{headers}"
+  puts "Please enter your preferred header (ie. 01_01_INTRO_01)"
+  picked_header = gets.chop
+
+  if headers.include? picked_header #checks if input is one in headers[]
+    six_picked_header(command_filepath, header_filepath, picked_header, headers)
+  else
+    puts "Invalid header"
+    six_header(command_filepath, header_filepath)
+  end
+end
+
+def six_command(command_filepath)
+  puts "Please enter the filepath of the header file (ie chapterX_header.str)"
+  header_filepath = gets.chop
+  if File.exists?(header_filepath)
+    six_header(command_filepath, header_filepath)
+  else
+    puts "Invalid header filepath"
+    six_command(command_filepath)
+  end
+end
+
+def six()
+  puts "Please enter the filepath of the command file (ie chapterX_command.str)"
+  command_filepath = gets.chop
+
+  if File.exists?(command_filepath)
+    six_command(command_filepath)
+  else
+    puts "Invalid command filepath"
+    six()
+  end
+end
+
 def start()
   puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
 
@@ -188,6 +346,7 @@ def menu(filepath)
   puts "Press 3 to view ASCII file data"
   puts "Press 4 to view hex file data"
   puts "Press 5 to change the dialogue file"
+  puts "Press 6 to change dialogue cameo"
   puts "Press any other button to quit"
 
   file_edit_option = gets.chop
@@ -276,8 +435,10 @@ def menu(filepath)
     menu(filepath)
   elsif file_edit_option == "5"
     start()
-  else
-    puts "Are you sure you want to quit? Y/N"
+  elsif file_edit_option == "6"
+    six()
+  else 
+   puts "Are you sure you would like to quit? Y/N" 
     answer = gets.chop
     if answer == "y" || answer == "Y"
       puts "Exited the program."
@@ -285,6 +446,6 @@ def menu(filepath)
       menu(filepath)
     end
   end
-end
+end #<end of menu()
 
 start()
