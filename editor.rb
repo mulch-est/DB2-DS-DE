@@ -166,7 +166,7 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo)
+def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, headers)
   replace_index = -1
   headers.each { |i|
     replace_index = replace_index + 1
@@ -228,22 +228,22 @@ def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo)
   menu(filepath)
 end
 
-def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
+def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
   puts "Are you sure you want to change the cameo at #{picked_header} to #{picked_cameo} in #{File.basename(command_filepath)}? Y/N"
   confirm = gets.chop
   if confirm == "y" || confirm == "Y"
-    six_confirm(command_filepath, header_filepath, picked_header, picked_cameo)
+    six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, headers)
   else
     "Did not confirm. (init file replaced with command)"
     menu(command_filepath)
   end
 end
 
-def six_picked_header(command_filepath, header_filepath, picked_header)
+def six_picked_header(command_filepath, header_filepath, picked_header, headers)
   puts "Please enter your preferred cameo (ie. 07)"
   picked_cameo = gets.chop
   #should check valid cameo here, but since a list has not yet been procured, advance.
-  six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
+  six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
 end
 
 def six_header(command_filepath, header_filepath)
@@ -294,7 +294,7 @@ def six_header(command_filepath, header_filepath)
   picked_header = gets.chop
 
   if headers.include? picked_header #checks if input is one in headers[]
-    six_picked_header(command_filepath, header_filepath, picked_header)
+    six_picked_header(command_filepath, header_filepath, picked_header, headers)
   else
     puts "Invalid header"
     six_header(command_filepath, header_filepath)
