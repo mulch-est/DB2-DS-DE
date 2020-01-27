@@ -166,11 +166,8 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def six_picked_header(command_filepath, header_filepath, picked_header)
-  puts "Pick the cameo, yahear?"
-    picked_cameo = gets.chop
-
-    replace_index = -1
+def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
+  replace_index = -1
     headers.each { |i|
       replace_index = replace_index + 1
       if i == picked_header
@@ -238,6 +235,14 @@ def six_picked_header(command_filepath, header_filepath, picked_header)
     puts "Ding!"
     menu(filepath)
     end
+end
+
+def six_picked_header(command_filepath, header_filepath, picked_header)
+  puts "Pick the cameo, yahear?"
+    picked_cameo = gets.chop
+
+    #should check valid cameo here, but since a list has not yet been procured, advance.
+  six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
 end
 
 def six_header(command_filepath, header_filepath)
