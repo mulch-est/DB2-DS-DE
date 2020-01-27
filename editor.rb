@@ -166,18 +166,8 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def six()
-  puts "Please enter the filepath of the command file (ie chapter1_command.str)"
-    command_filepath = gets.chop
-
-    if File.exists?(command_filepath)
-      #puts "Would you like to use the chapter header to replace ASCII Y/N"
-      #puts "(Using the header will not work for chapter 7)"
-      #ascii_file_edit_option = gets.chop
-
-      #find correct "spacer tag" and replace second value in the command file
-
-      puts "Enter header path to do the swappage yah?"
+def six_command(command_filepath)
+  puts "Enter header path to do the swappage yah?"
       header_filepath = gets.chop
       #create def to save on file inputs?
 
@@ -316,6 +306,24 @@ def six()
     #^that should be func
     puts "Ding!"
     menu(filepath)
+    end
+end
+
+def six()
+  puts "Please enter the filepath of the command file (ie chapter1_command.str)"
+    command_filepath = gets.chop
+
+    if File.exists?(command_filepath)
+      #puts "Would you like to use the chapter header to replace ASCII Y/N"
+      #puts "(Using the header will not work for chapter 7)"
+      #ascii_file_edit_option = gets.chop
+
+      #find correct "spacer tag" and replace second value in the command file
+
+      six_command(command_filepath)
+    else
+      puts "Could not read command"
+      six()
     end
 end
 
