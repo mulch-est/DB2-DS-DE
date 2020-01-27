@@ -168,80 +168,70 @@ end
 
 def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
   replace_index = -1
-    headers.each { |i|
-      replace_index = replace_index + 1
-      if i == picked_header
-        break
-      end
-    }
-    puts "got replace_index of #{replace_index}"
-
-    command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
-
-    spacers = []
-    last_i = ""
-    last_ii = ""
-    last_it = ""
-    curr_spacer = ""
-    collect = 1
-    num = 0
-    command_new_data = "";
-    #begin copy-paste
-    # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
-    #copy-paste begins
-    command_data.split("").each do |i| #iterates over each character in log_data
-      command_new_data = command_new_data + i;
-      if i.unpack('H*')[0] == "00"
-        if last_i == "00"
-          curr_spacer = ""
-        end
-      end
-      if i.unpack('H*')[0] != "00"
-        if last_i != "00"
-          curr_spacer = ""
-          collect = 0
-        end
-      end
-      if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
-        if spacers.length == replace_index
-          #writes over file while reading
-          puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
-          puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
-          command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
-        end
-        spacers.push(curr_spacer)
-        curr_spacer=""
-      end
-      last_it = last_ii
-      last_ii = last_i
-      last_i = i.unpack('H*')[0]
-      if collect == 1
-        curr_spacer = curr_spacer + i.unpack('H*')[0]
-      end
-      collect = 1
-      num = num + 1
-
-      #puts "i:#{i}, cs:#{curr_spacer}"
+  headers.each { |i|
+    replace_index = replace_index + 1
+    if i == picked_header
+      break
     end
-    puts "s: #{spacers}"
-    #^returns 00XX00YY
-    #end copy-paste
+  }
+  #puts "got replace_index of #{replace_index}"
+  command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
 
-    puts command_new_data.unpack('H*')[0]
-    #replace hex of spacers[headernum] to 00XX00ZZ(00)
+  spacers = []
+  last_i = ""
+  last_ii = ""
+  last_it = ""
+  curr_spacer = ""
+  collect = 1
+  num = 0
+  command_new_data = "";
+  # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
+  command_data.split("").each do |i| #iterates over each character in log_data
+    command_new_data = command_new_data + i;
+    if i.unpack('H*')[0] == "00"
+      if last_i == "00"
+        curr_spacer = ""
+      end
+    end
+    if i.unpack('H*')[0] != "00"
+      if last_i != "00"
+        curr_spacer = ""
+        collect = 0
+      end
+    end
+    if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
+      if spacers.length == replace_index
+        #writes over file while reading
+        puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
+        puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
+        command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
+      end
+      spacers.push(curr_spacer)
+      curr_spacer=""
+    end
+    last_it = last_ii
+    last_ii = last_i
+    last_i = i.unpack('H*')[0]
+    if collect == 1
+      curr_spacer = curr_spacer + i.unpack('H*')[0]
+    end
+    collect = 1
+    num = num + 1
+    #puts "i:#{i}, cs:#{curr_spacer}"
+  end
+  #puts "s: #{spacers}"
+  #^returns 00XX00YY
+  #puts command_new_data.unpack('H*')[0]
 
-    File.write(command_filepath, command_new_data)
-    #^that should be func
-    puts "Ding!"
-    menu(filepath)
-    
+  File.write(command_filepath, command_new_data)
+  puts "Replaced cameo."
+  menu(filepath)
 end
 
 def six_picked_header(command_filepath, header_filepath, picked_header)
-  puts "Pick the cameo, yahear?"
-    picked_cameo = gets.chop
-
-    #should check valid cameo here, but since a list has not yet been procured, advance.
+  puts "Please enter your preferred header (ie. 07)"
+  picked_cameo = gets.chop
+  #should check valid cameo here, but since a list has not yet been procured, advance.
   six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
 end
 
@@ -288,59 +278,39 @@ def six_header(command_filepath, header_filepath)
     #puts "i:#{i}, curr_head:#{curr_head}"
   end
   #got headers
+  puts "headers: #{headers}"
+  puts "Please enter your preferred header (ie. 01_01_INTRO_01)"
+  picked_header = gets.chop
 
-      #NOW, get headers and use them as index referencer, similar to auto-ascii replace
-
-      #menu(filepath)
-    #else 
-      #put "Could not read the file at (#{command_filepath})"
-      #menu(filepath) #<<<change later
-    #end
-      #^this one spoosed
-    puts "headers: #{headers}"
-    puts "Pick the header, ok?"
-    picked_header = gets.chop
-    #^ save for wrong header inputs
-
-#header list produced
-   if headers.include? picked_header
-     six_picked_header(command_filepath, header_filepath, picked_header)
-   else
-     puts "Invalid header"
-     six_header(command_filepath, header_filepath)
-   end
+  if headers.include? picked_header #checks if input is one in headers[]
+    six_picked_header(command_filepath, header_filepath, picked_header)
+  else
+    puts "Invalid header"
+    six_header(command_filepath, header_filepath)
+  end
 end
 
 def six_command(command_filepath)
-  puts "Enter header path to do the swappage yah?"
-      header_filepath = gets.chop
-      #create def to save on file inputs?
-
-#copy-paste begins
-      if File.exists?(header_filepath)
-        six_header(command_filepath, header_filepath)
-      else
-        puts "Could not read header file"
-        six_command(command_filepath)
-      end
+  puts "Please enter the filepath of the header file (ie chapterX_header.str)"
+  header_filepath = gets.chop
+  if File.exists?(header_filepath)
+    six_header(command_filepath, header_filepath)
+  else
+    puts "Invalid header filepath"
+    six_command(command_filepath)
+  end
 end
 
 def six()
-  puts "Please enter the filepath of the command file (ie chapter1_command.str)"
-    command_filepath = gets.chop
+  puts "Please enter the filepath of the command file (ie chapterX_command.str)"
+  command_filepath = gets.chop
 
-    if File.exists?(command_filepath)
-      #puts "Would you like to use the chapter header to replace ASCII Y/N"
-      #puts "(Using the header will not work for chapter 7)"
-      #ascii_file_edit_option = gets.chop
-
-      #find correct "spacer tag" and replace second value in the command file
-
-      six_command(command_filepath)
-    else
-      puts "Could not read command"
-      six()
-    end
+  if File.exists?(command_filepath)
+    six_command(command_filepath)
+  else
+    puts "Invalid command filepath"
+    six()
+  end
 end
 
 def start()
