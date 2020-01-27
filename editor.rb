@@ -427,16 +427,16 @@ def menu(filepath)
     #^that should be func
     puts "Ding!"
     menu(filepath)
+    end
+  else #supposed to be the other one up^ commented out
+   puts "Are you sure you would like to quit? Y/N" 
+    answer = gets.chop
+    if answer == "y" || answer == "Y"
+      puts "Exited the program."
+    else
+      menu(filepath)
+    end
   end
-else #supposed to be the other one up^ commented out
-   puts "my bad" 
-    #answer = gets.chop
-    #if answer == "y" || answer == "Y"
-     # puts "Exited the program."
-    ##  menu(filepath)
-    
-  end
-  #^end copy-paste
-end
+end #<end of menu()
 
 start()
