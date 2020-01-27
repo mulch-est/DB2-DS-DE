@@ -166,7 +166,7 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
+def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo)
   replace_index = -1
   headers.each { |i|
     replace_index = replace_index + 1
@@ -186,7 +186,7 @@ def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_ca
   num = 0
   command_new_data = "";
   # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
-  command_data.split("").each do |i| #iterates over each character in log_data
+  command_data.split("").each do |i| #iterates over each character in command_data
     command_new_data = command_new_data + i;
     if i.unpack('H*')[0] == "00"
       if last_i == "00"
@@ -201,7 +201,7 @@ def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_ca
     end
     if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
       if spacers.length == replace_index
-        #writes over file while reading
+        #writes over file while reading for spacers
         puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
         puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
         command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
@@ -220,12 +220,23 @@ def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_ca
     #puts "i:#{i}, cs:#{curr_spacer}"
   end
   #puts "s: #{spacers}"
-  #^returns 00XX00YY
+  #^returns 00XX00YY items
   #puts command_new_data.unpack('H*')[0]
 
   File.write(command_filepath, command_new_data)
   puts "Replaced cameo."
   menu(filepath)
+end
+
+def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
+  puts "Are you sure you want to change the cameo at #{picked_header} to #{picked_cameo} in #{File.basename(command_filepath)}? Y/N"
+  confirm = gets.chop
+  if confirm == "y" || confirm == "Y"
+    six_confirm(command_filepath, header_filepath, picked_header, picked_cameo)
+  else
+    "Did not confirm. (init file replaced with command)"
+    menu(command_filepath)
+  end
 end
 
 def six_picked_header(command_filepath, header_filepath, picked_header)
