@@ -234,7 +234,7 @@ def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_ca
     #^that should be func
     puts "Ding!"
     menu(filepath)
-    end
+    
 end
 
 def six_picked_header(command_filepath, header_filepath, picked_header)
