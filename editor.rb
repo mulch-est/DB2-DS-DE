@@ -288,61 +288,61 @@ def menu(filepath)
 
       #find correct "spacer tag" and replace second value in the command file
 
-puts "Enter header path to do the swappage yah?"
+      puts "Enter header path to do the swappage yah?"
       header_filepath = gets.chop
       #create def to save on file inputs?
 
 #copy-paste begins
       if File.exists?(header_filepath)
-      header_filechars = File.size(header_filepath)
-      puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+        header_filechars = File.size(header_filepath)
+        puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
 
-    header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
-    headers = []
-    # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
-    last_i = ""
-    last_ii = ""
-    last_it = ""
-    curr_head = ""
-    collecting_header = 0
-    #puts header_data
-    header_data.split("").each do |i| #iterates over each character in header_data
-      if i == "0"
-        if curr_head == ""
-          collecting_header = 5
-        elsif last_i == "_" && last_it != "0"
-          collecting_header = 2
-        end
-      end
-      if last_ii == "0" && i != "_" && curr_head.length == 2
-        collecting_header=0
-        curr_head=""
-      end
-      last_it = last_ii
-      last_ii = last_i
-      last_i = i
-      if collecting_header > 0
-        curr_head = curr_head + i
-        if collecting_header == 1 || collecting_header == 2
-          if !headers.include? curr_head
-            collecting_header = collecting_header - 1
-            if collecting_header == 0
-              headers.push(curr_head)
-              curr_head=""
+        header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+        headers = []
+        # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+        last_i = ""
+        last_ii = ""
+        last_it = ""
+        curr_head = ""
+        collecting_header = 0
+        #puts header_data
+        header_data.split("").each do |i| #iterates over each character in header_data
+          if i == "0"
+            if curr_head == ""
+              collecting_header = 5
+            elsif last_i == "_" && last_it != "0"
+              collecting_header = 2
             end
           end
+          if last_ii == "0" && i != "_" && curr_head.length == 2
+            collecting_header=0
+            curr_head=""
+          end
+          last_it = last_ii
+          last_ii = last_i
+          last_i = i
+          if collecting_header > 0
+            curr_head = curr_head + i
+            if collecting_header == 1 || collecting_header == 2
+              if !headers.include? curr_head
+                collecting_header = collecting_header - 1
+                if collecting_header == 0
+                  headers.push(curr_head)
+                  curr_head=""
+                end
+              end
+            end
+          end
+          #puts "i:#{i}, curr_head:#{curr_head}"
         end
+        #puts "headers: #{headers}"
+        #puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
+        #replace_header = gets.chop
+        #ascii_header_menu(filepath, header_filepath, headers, replace_header)
+      else
+        #puts "Could not read the file."
+        #ascii_header_replace_menu(filepath, gets.chop)
       end
-      #puts "i:#{i}, curr_head:#{curr_head}"
-    end
-    #puts "headers: #{headers}"
-    #puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
-    #replace_header = gets.chop
-    #ascii_header_menu(filepath, header_filepath, headers, replace_header)
-  else
-    #puts "Could not read the file."
-    #ascii_header_replace_menu(filepath, gets.chop)
-  end
 
       #NOW, get headers and use them as index referencer, similar to auto-ascii replace
 
@@ -351,90 +351,85 @@ puts "Enter header path to do the swappage yah?"
       #put "Could not read the file at (#{command_filepath})"
       #menu(filepath) #<<<change later
     #end
+      #^this one spoosed
     puts "headers: #{headers}"
-puts "Pick the header, ok?"
-picked_header = gets.chop
-#^ save for wrong header inputs
+    puts "Pick the header, ok?"
+    picked_header = gets.chop
+    #^ save for wrong header inputs
 
-puts "Pick the cameo, yahear?"
-picked_cameo = gets.chop
+    puts "Pick the cameo, yahear?"
+    picked_cameo = gets.chop
 
-replace_index = -1
+    replace_index = -1
     headers.each { |i|
       replace_index = replace_index + 1
       if i == picked_header
         break
       end
     }
-puts "got replace_index of #{replace_index}"
+    puts "got replace_index of #{replace_index}"
 
-      command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
+    command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
 
-      spacers = []
-      last_i = ""
-      last_ii = ""
-      last_it = ""
-      curr_spacer = ""
-      collect = 1
-      num = 0
-      command_new_data = "";
-      #begin copy-paste
-      # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
-      #copy-paste begins
-      command_data.split("").each do |i| #iterates over each character in log_data
-        command_new_data = command_new_data + i;
-        if i.unpack('H*')[0] == "00"
-          if last_i == "00"
-            curr_spacer = ""
-          end
+    spacers = []
+    last_i = ""
+    last_ii = ""
+    last_it = ""
+    curr_spacer = ""
+    collect = 1
+    num = 0
+    command_new_data = "";
+    #begin copy-paste
+    # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
+    #copy-paste begins
+    command_data.split("").each do |i| #iterates over each character in log_data
+      command_new_data = command_new_data + i;
+      if i.unpack('H*')[0] == "00"
+        if last_i == "00"
+          curr_spacer = ""
         end
-        if i.unpack('H*')[0] != "00"
-          if last_i != "00"
-            curr_spacer = ""
-            collect = 0
-          end
-        end
-        if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
-          if spacers.length == replace_index
-#writes over file while reading
-puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
-puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
-            command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
-
-#spacers[replace_index][0, 6] + picked_cameo
-          end
-            spacers.push(curr_spacer)
-          
-          curr_spacer=""
-        end
-        last_it = last_ii
-        last_ii = last_i
-        last_i = i.unpack('H*')[0]
-        if collect == 1
-          curr_spacer = curr_spacer + i.unpack('H*')[0]
-        end
-        collect = 1
-        num = num + 1
-
-        #puts "i:#{i}, cs:#{curr_spacer}"
       end
-      puts "s: #{spacers}"
-      #^returns 00XX00YY
-      #end copy-paste
+      if i.unpack('H*')[0] != "00"
+        if last_i != "00"
+          curr_spacer = ""
+          collect = 0
+        end
+      end
+      if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
+        if spacers.length == replace_index
+          #writes over file while reading
+          puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
+          puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
+          command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
+        end
+        spacers.push(curr_spacer)
+        curr_spacer=""
+      end
+      last_it = last_ii
+      last_ii = last_i
+      last_i = i.unpack('H*')[0]
+      if collect == 1
+        curr_spacer = curr_spacer + i.unpack('H*')[0]
+      end
+      collect = 1
+      num = num + 1
 
-      
-puts command_new_data.unpack('H*')[0]
-#replace hex of spacers[headernum] to 00XX00ZZ(00)
+      #puts "i:#{i}, cs:#{curr_spacer}"
+    end
+    puts "s: #{spacers}"
+    #^returns 00XX00YY
+    #end copy-paste
 
-      File.write(command_filepath, command_new_data)
+    puts command_new_data.unpack('H*')[0]
+    #replace hex of spacers[headernum] to 00XX00ZZ(00)
 
-
-#^that should be func
-  puts "Ding!"
-  menu(filepath)
-end
-  else
-   puts "my bad"
+    File.write(command_filepath, command_new_data)
+    #^that should be func
+    puts "Ding!"
+    menu(filepath)
+  end
+else #supposed to be the other one up^ commented out
+   puts "my bad" 
     #answer = gets.chop
     #if answer == "y" || answer == "Y"
      # puts "Exited the program."
