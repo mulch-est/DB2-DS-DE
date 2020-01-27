@@ -166,14 +166,8 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def six_command(command_filepath)
-  puts "Enter header path to do the swappage yah?"
-      header_filepath = gets.chop
-      #create def to save on file inputs?
-
-#copy-paste begins
-      if File.exists?(header_filepath)
-        header_filechars = File.size(header_filepath)
+def six_header(command_filepath, header_filepath)
+  header_filechars = File.size(header_filepath)
         puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
 
         header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
@@ -307,6 +301,20 @@ def six_command(command_filepath)
     puts "Ding!"
     menu(filepath)
     end
+end
+
+def six_command(command_filepath)
+  puts "Enter header path to do the swappage yah?"
+      header_filepath = gets.chop
+      #create def to save on file inputs?
+
+#copy-paste begins
+      if File.exists?(header_filepath)
+        six_header(command_filepath, header_filepath)
+      else
+        puts "Could not read header file"
+        six_command(command_filepath)
+      end
 end
 
 def six()
