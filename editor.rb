@@ -166,119 +166,8 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def start()
-  puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
-
-  filepath = gets.chop #add data/ eventually
-
-  if File.exists?(filepath)
-    filechars = File.size(filepath)
-    puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
-    #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
-    menu(filepath)
-  else
-    puts "Your file at (#{filepath}) could not be located. Please try again"
-    start()
-  end
-end
-
-def menu(filepath)
-  puts "Press 1 for automatic ASCII editing"
-  puts "Press 2 for automatic hex editing"
-  puts "Press 3 to view ASCII file data"
-  puts "Press 4 to view hex file data"
-  puts "Press 5 to change the dialogue file"
-  puts "Press 6 to change dialogue cameo"
-  puts "Press any other button to quit"
-
-  file_edit_option = gets.chop
-
-  if file_edit_option == "1"
-    puts "Would you like to use the chapter header to replace ASCII Y/N"
-    puts "(Using the header is less likely to glitch the game, although it will not work for chapter 7)"
-    ascii_file_edit_option = gets.chop
-
-    if ascii_file_edit_option == "y" || ascii_file_edit_option == "Y"
-      puts "Please enter the filepath of the header (ie chapterX_header.str)"
-      header_filepath = gets.chop
-
-      ascii_header_replace_menu(filepath, header_filepath)
-    else #non-header auto ascii replace
-      puts "Please enter the ASCII code you would like to change"
-      replaced_ascii = gets.chop
-
-      puts "Please enter the ASCII code you would like to replace #{replaced_ascii} with"
-      new_ascii = gets.chop
-
-      puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
-      ascii_replace_confirmation = gets.chop
-
-      if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
-        replaceAscii(filepath, replaced_ascii, new_ascii)
-      else
-        puts "Replacement was not confirmed."
-        menu(filepath)
-      end
-    end
-  elsif file_edit_option == "2"
-    puts "Please enter the hex code you would like to change"
-    replaced_hex = gets.chop
-
-    puts "Please enter the hex code you would like to replace #{replaced_hex} with"
-    new_hex = gets.chop
-
-    puts "Replacing all #{replaced_hex} in #{File.basename(filepath)} with #{new_hex}, is this ok? Y/N"
-    hex_replace_confirmation = gets.chop
-
-    if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
-      hexreplace_filedata = File.read(filepath)
-      hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
-      puts "Successfully replaced hex data..."
-      File.write(filepath, hexreplace_newfiledata)
-      puts "Successfully wrote new data to file..."
-      puts "--ASCII view--"
-      puts "#{hexreplace_newfiledata}"
-    else
-      puts "Replacement was not confirmed."
-      menu(filepath)
-    end
-  elsif file_edit_option == "3"
-    #viewAscii()
-    puts "--ASCII view--"
-    #file_data = File.foreach(filepath) { |line| puts line }
-    file_data = File.binread(filepath)
-    puts file_data
-    puts "--ASCII view--"
-    menu(filepath)
-  elsif file_edit_option == "4"
-    #viewHex()
-    puts "--HEX view--"
-    file_readable_hexdata = [];
-    hexline=""
-    number = 0 #used for counting where the next hex pair should be placed
-    file_hexdata = File.binread(filepath)
-    file_hexdata.unpack('H*')[0].scan(/../).each {|item|
-      hexline = hexline + padEnd(item)
-      number = number + 1
-      #after the 16th hexpair, start next line
-      if number == 16
-        file_readable_hexdata.push(hexline)
-        hexline=""
-        number = 0
-      end
-    }
-    file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
-
-    file_readable_hexdata.each { |item|
-      puts item
-    }
-
-    puts "--HEX view--"
-    menu(filepath)
-  elsif file_edit_option == "5"
-    start()
-  elsif file_edit_option == "6"
-    puts "Please enter the filepath of the command file (ie chapter1_command.str)"
+def six()
+  puts "Please enter the filepath of the command file (ie chapter1_command.str)"
     command_filepath = gets.chop
 
     if File.exists?(command_filepath)
@@ -428,7 +317,122 @@ def menu(filepath)
     puts "Ding!"
     menu(filepath)
     end
-  else #supposed to be the other one up^ commented out
+end
+
+def start()
+  puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
+
+  filepath = gets.chop #add data/ eventually
+
+  if File.exists?(filepath)
+    filechars = File.size(filepath)
+    puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
+    #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
+    menu(filepath)
+  else
+    puts "Your file at (#{filepath}) could not be located. Please try again"
+    start()
+  end
+end
+
+def menu(filepath)
+  puts "Press 1 for automatic ASCII editing"
+  puts "Press 2 for automatic hex editing"
+  puts "Press 3 to view ASCII file data"
+  puts "Press 4 to view hex file data"
+  puts "Press 5 to change the dialogue file"
+  puts "Press 6 to change dialogue cameo"
+  puts "Press any other button to quit"
+
+  file_edit_option = gets.chop
+
+  if file_edit_option == "1"
+    puts "Would you like to use the chapter header to replace ASCII Y/N"
+    puts "(Using the header is less likely to glitch the game, although it will not work for chapter 7)"
+    ascii_file_edit_option = gets.chop
+
+    if ascii_file_edit_option == "y" || ascii_file_edit_option == "Y"
+      puts "Please enter the filepath of the header (ie chapterX_header.str)"
+      header_filepath = gets.chop
+
+      ascii_header_replace_menu(filepath, header_filepath)
+    else #non-header auto ascii replace
+      puts "Please enter the ASCII code you would like to change"
+      replaced_ascii = gets.chop
+
+      puts "Please enter the ASCII code you would like to replace #{replaced_ascii} with"
+      new_ascii = gets.chop
+
+      puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
+      ascii_replace_confirmation = gets.chop
+
+      if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
+        replaceAscii(filepath, replaced_ascii, new_ascii)
+      else
+        puts "Replacement was not confirmed."
+        menu(filepath)
+      end
+    end
+  elsif file_edit_option == "2"
+    puts "Please enter the hex code you would like to change"
+    replaced_hex = gets.chop
+
+    puts "Please enter the hex code you would like to replace #{replaced_hex} with"
+    new_hex = gets.chop
+
+    puts "Replacing all #{replaced_hex} in #{File.basename(filepath)} with #{new_hex}, is this ok? Y/N"
+    hex_replace_confirmation = gets.chop
+
+    if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
+      hexreplace_filedata = File.read(filepath)
+      hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
+      puts "Successfully replaced hex data..."
+      File.write(filepath, hexreplace_newfiledata)
+      puts "Successfully wrote new data to file..."
+      puts "--ASCII view--"
+      puts "#{hexreplace_newfiledata}"
+    else
+      puts "Replacement was not confirmed."
+      menu(filepath)
+    end
+  elsif file_edit_option == "3"
+    #viewAscii()
+    puts "--ASCII view--"
+    #file_data = File.foreach(filepath) { |line| puts line }
+    file_data = File.binread(filepath)
+    puts file_data
+    puts "--ASCII view--"
+    menu(filepath)
+  elsif file_edit_option == "4"
+    #viewHex()
+    puts "--HEX view--"
+    file_readable_hexdata = [];
+    hexline=""
+    number = 0 #used for counting where the next hex pair should be placed
+    file_hexdata = File.binread(filepath)
+    file_hexdata.unpack('H*')[0].scan(/../).each {|item|
+      hexline = hexline + padEnd(item)
+      number = number + 1
+      #after the 16th hexpair, start next line
+      if number == 16
+        file_readable_hexdata.push(hexline)
+        hexline=""
+        number = 0
+      end
+    }
+    file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
+
+    file_readable_hexdata.each { |item|
+      puts item
+    }
+
+    puts "--HEX view--"
+    menu(filepath)
+  elsif file_edit_option == "5"
+    start()
+  elsif file_edit_option == "6"
+    six()
+  else 
    puts "Are you sure you would like to quit? Y/N" 
     answer = gets.chop
     if answer == "y" || answer == "Y"
