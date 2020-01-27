@@ -166,71 +166,8 @@ def ascii_header_replace_menu(filepath, header_filepath)
   end
 end
 
-def six_header(command_filepath, header_filepath)
-  header_filechars = File.size(header_filepath)
-        puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
-
-        header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
-        headers = []
-        # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
-        last_i = ""
-        last_ii = ""
-        last_it = ""
-        curr_head = ""
-        collecting_header = 0
-        #puts header_data
-        header_data.split("").each do |i| #iterates over each character in header_data
-          if i == "0"
-            if curr_head == ""
-              collecting_header = 5
-            elsif last_i == "_" && last_it != "0"
-              collecting_header = 2
-            end
-          end
-          if last_ii == "0" && i != "_" && curr_head.length == 2
-            collecting_header=0
-            curr_head=""
-          end
-          last_it = last_ii
-          last_ii = last_i
-          last_i = i
-          if collecting_header > 0
-            curr_head = curr_head + i
-            if collecting_header == 1 || collecting_header == 2
-              if !headers.include? curr_head
-                collecting_header = collecting_header - 1
-                if collecting_header == 0
-                  headers.push(curr_head)
-                  curr_head=""
-                end
-              end
-            end
-          end
-          #puts "i:#{i}, curr_head:#{curr_head}"
-        end
-        #puts "headers: #{headers}"
-        #puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
-        #replace_header = gets.chop
-        #ascii_header_menu(filepath, header_filepath, headers, replace_header)
-      else
-        #puts "Could not read the file."
-        #ascii_header_replace_menu(filepath, gets.chop)
-      end
-
-      #NOW, get headers and use them as index referencer, similar to auto-ascii replace
-
-      #menu(filepath)
-    #else 
-      #put "Could not read the file at (#{command_filepath})"
-      #menu(filepath) #<<<change later
-    #end
-      #^this one spoosed
-    puts "headers: #{headers}"
-    puts "Pick the header, ok?"
-    picked_header = gets.chop
-    #^ save for wrong header inputs
-
-    puts "Pick the cameo, yahear?"
+def six_picked_header(command_filepath, header_filepath, picked_header)
+  puts "Pick the cameo, yahear?"
     picked_cameo = gets.chop
 
     replace_index = -1
@@ -301,6 +238,80 @@ def six_header(command_filepath, header_filepath)
     puts "Ding!"
     menu(filepath)
     end
+end
+
+def six_header(command_filepath, header_filepath)
+  header_filechars = File.size(header_filepath)
+        puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+
+  #produce header list
+        header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+        headers = []
+        # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+        last_i = ""
+        last_ii = ""
+        last_it = ""
+        curr_head = ""
+        collecting_header = 0
+        #puts header_data
+        header_data.split("").each do |i| #iterates over each character in header_data
+          if i == "0"
+            if curr_head == ""
+              collecting_header = 5
+            elsif last_i == "_" && last_it != "0"
+              collecting_header = 2
+            end
+          end
+          if last_ii == "0" && i != "_" && curr_head.length == 2
+            collecting_header=0
+            curr_head=""
+          end
+          last_it = last_ii
+          last_ii = last_i
+          last_i = i
+          if collecting_header > 0
+            curr_head = curr_head + i
+            if collecting_header == 1 || collecting_header == 2
+              if !headers.include? curr_head
+                collecting_header = collecting_header - 1
+                if collecting_header == 0
+                  headers.push(curr_head)
+                  curr_head=""
+                end
+              end
+            end
+          end
+          #puts "i:#{i}, curr_head:#{curr_head}"
+        end
+        #puts "headers: #{headers}"
+        #puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
+        #replace_header = gets.chop
+        #ascii_header_menu(filepath, header_filepath, headers, replace_header)
+      else
+        #puts "Could not read the file."
+        #ascii_header_replace_menu(filepath, gets.chop)
+      end
+
+      #NOW, get headers and use them as index referencer, similar to auto-ascii replace
+
+      #menu(filepath)
+    #else 
+      #put "Could not read the file at (#{command_filepath})"
+      #menu(filepath) #<<<change later
+    #end
+      #^this one spoosed
+    puts "headers: #{headers}"
+    puts "Pick the header, ok?"
+    picked_header = gets.chop
+    #^ save for wrong header inputs
+
+#header list produced
+   if headers.include? picked_header
+     six_picked_header(command_filepath, header_filepath, picked_header)
+   else
+     puts "Invalid header"
+     six_header(command_filepath, header_filepath)
+   end
 end
 
 def six_command(command_filepath)
