@@ -240,7 +240,7 @@ def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_ca
 end
 
 def six_picked_header(command_filepath, header_filepath, picked_header)
-  puts "Please enter your preferred header (ie. 07)"
+  puts "Please enter your preferred cameo (ie. 07)"
   picked_cameo = gets.chop
   #should check valid cameo here, but since a list has not yet been procured, advance.
   six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo)
