@@ -359,6 +359,15 @@ picked_header = gets.chop
 puts "Pick the cameo, yahear?"
 picked_cameo = gets.chop
 
+replace_index = -1
+    headers.each { |i|
+      replace_index = replace_index + 1
+      if i == picked_header
+        break
+      end
+    }
+puts "got replace_index of #{replace_index}"
+
       command_data = File.binread(command_filepath) #doesn't stop at 1A on Windows if using binread
 
       spacers = []
@@ -367,10 +376,13 @@ picked_cameo = gets.chop
       last_it = ""
       curr_spacer = ""
       collect = 1
+      num = 0
+      command_new_data = "";
       #begin copy-paste
       # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
       #copy-paste begins
       command_data.split("").each do |i| #iterates over each character in log_data
+        command_new_data = command_new_data + i;
         if i.unpack('H*')[0] == "00"
           if last_i == "00"
             curr_spacer = ""
@@ -383,7 +395,16 @@ picked_cameo = gets.chop
           end
         end
         if last_it != "00" && last_ii == "00" && last_i != "00" && i.unpack('H*')[0] == "00" && curr_spacer.length == 8
-          spacers.push(curr_spacer)
+          if spacers.length == replace_index
+#writes over file while reading
+puts "cs: #{curr_spacer}, ncs: #{curr_spacer[0, 6] + picked_cameo}, ri: #{replace_index}, ph: #{picked_header}"
+puts "old: #{command_new_data}, new: #{command_new_data[0, num-4] + (curr_spacer[0, 6] + picked_cameo)}"
+            command_new_data = command_new_data[0, num-4] + [curr_spacer[0, 6] + picked_cameo + "00"].pack('H*')
+
+#spacers[replace_index][0, 6] + picked_cameo
+          end
+            spacers.push(curr_spacer)
+          
           curr_spacer=""
         end
         last_it = last_ii
@@ -393,6 +414,8 @@ picked_cameo = gets.chop
           curr_spacer = curr_spacer + i.unpack('H*')[0]
         end
         collect = 1
+        num = num + 1
+
         #puts "i:#{i}, cs:#{curr_spacer}"
       end
       puts "s: #{spacers}"
@@ -400,28 +423,11 @@ picked_cameo = gets.chop
       #end copy-paste
 
       
-
+puts command_new_data.unpack('H*')[0]
 #replace hex of spacers[headernum] to 00XX00ZZ(00)
-replace_index = -1
-    headers.each { |i|
-      replace_index = replace_index + 1
-      if i == picked_header
-        break
-      end
-    }
-replaced_hex = spacers[replace_index]
-new_hex = spacers[replace_index][0, 6] + picked_cameo
 
-puts "rh: #{replaced_hex}, nh: #{new_hex}"
+      File.write(command_filepath, command_new_data)
 
-hexreplace_filedata = File.read(command_filepath)
-      hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
-      #^this replaces all, we need to replace just one
-      puts "Successfully replaced hex data..."
-      File.write(command_filepath, hexreplace_newfiledata)
-      puts "Successfully wrote new data to file..."
-      #puts "--ASCII view--"
-      #puts "#{hexreplace_newfiledata}"
 
 #^that should be func
   puts "Ding!"
