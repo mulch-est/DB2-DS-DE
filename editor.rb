@@ -224,8 +224,8 @@ def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, 
   #puts command_new_data.unpack('H*')[0]
 
   File.write(command_filepath, command_new_data)
-  puts "Replaced cameo."
-  menu(filepath)
+  puts "Replaced cameo. (main file is now command file)"
+  menu(command_filepath)
 end
 
 def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
