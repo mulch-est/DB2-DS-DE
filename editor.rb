@@ -247,55 +247,47 @@ end
 
 def six_header(command_filepath, header_filepath)
   header_filechars = File.size(header_filepath)
-        puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
-
+  puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
   #produce header list
-        header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
-        headers = []
-        # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
-        last_i = ""
-        last_ii = ""
-        last_it = ""
-        curr_head = ""
-        collecting_header = 0
-        #puts header_data
-        header_data.split("").each do |i| #iterates over each character in header_data
-          if i == "0"
-            if curr_head == ""
-              collecting_header = 5
-            elsif last_i == "_" && last_it != "0"
-              collecting_header = 2
-            end
-          end
-          if last_ii == "0" && i != "_" && curr_head.length == 2
-            collecting_header=0
+  header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+  headers = []
+  # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+  last_i = ""
+  last_ii = ""
+  last_it = ""
+  curr_head = ""
+  collecting_header = 0
+  #get headers from file
+  header_data.split("").each do |i| #iterates over each character in header_data
+    if i == "0"
+      if curr_head == ""
+        collecting_header = 5
+      elsif last_i == "_" && last_it != "0"
+        collecting_header = 2
+      end
+    end
+    if last_ii == "0" && i != "_" && curr_head.length == 2
+      collecting_header=0
+      curr_head=""
+    end
+    last_it = last_ii
+    last_ii = last_i
+    last_i = i
+    if collecting_header > 0
+      curr_head = curr_head + i
+      if collecting_header == 1 || collecting_header == 2
+        if !headers.include? curr_head
+          collecting_header = collecting_header - 1
+          if collecting_header == 0
+            headers.push(curr_head)
             curr_head=""
           end
-          last_it = last_ii
-          last_ii = last_i
-          last_i = i
-          if collecting_header > 0
-            curr_head = curr_head + i
-            if collecting_header == 1 || collecting_header == 2
-              if !headers.include? curr_head
-                collecting_header = collecting_header - 1
-                if collecting_header == 0
-                  headers.push(curr_head)
-                  curr_head=""
-                end
-              end
-            end
-          end
-          #puts "i:#{i}, curr_head:#{curr_head}"
         end
-        #puts "headers: #{headers}"
-        #puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
-        #replace_header = gets.chop
-        #ascii_header_menu(filepath, header_filepath, headers, replace_header)
-      else
-        #puts "Could not read the file."
-        #ascii_header_replace_menu(filepath, gets.chop)
       end
+    end
+    #puts "i:#{i}, curr_head:#{curr_head}"
+  end
+  #got headers
 
       #NOW, get headers and use them as index referencer, similar to auto-ascii replace
 
