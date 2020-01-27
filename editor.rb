@@ -21,11 +21,11 @@ end
 def replaceAscii(replace_filepath, replaced_ascii, new_ascii)
   asciireplace_filedata = File.read(replace_filepath)
   asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii.to_s, new_ascii.to_s)
-  puts "Successfully replaced ascii data..."
+  #puts "Successfully replaced ascii data..."
   File.write(replace_filepath, asciireplace_newfiledata)
   puts "Successfully wrote new data to file..."
-  puts "--ASCII view--"
-  puts "#{asciireplace_newfiledata}"
+  #puts "--ASCII view--"
+  #puts "#{asciireplace_newfiledata}"
 end
 
 def ascii_header_menu(filepath, header_filepath, headers, replace_header)
@@ -91,24 +91,24 @@ def ascii_header_menu(filepath, header_filepath, headers, replace_header)
     #puts "charlims: #{charlims}"
     #puts "logs: #{logs}"
     #copy-paste ends
-    puts "Please enter the ASCII code you would like to replace in #{replace_header}"
+    puts "Please enter the dialogue you would like to substitute for the dialogue in #{replace_header}"
     puts "Limit is #{charlims[replace_index]} chars, enter less: excess is padded with spaces, enter more: excess is deleted"
     new_ascii = gets.chop
 
-    puts "Replacing dialogue in #{replace_header} in #{File.basename(filepath)} with #{new_ascii} (#{new_ascii.length} chars), is this ok?  Y/N"
+    puts "Replacing dialogue in (#{replace_header}) in #{File.basename(filepath)} with (#{new_ascii}) [#{new_ascii.length} chars], is this ok?  (Y)"
     ascii_replace_confirmation = gets.chop
 
     if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
       #puts replace_index
       replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
       puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
-      menu(filepath)
+      edOps()
     else
-      puts "Replacement was not confirmed."
-      menu(filepath)
+      puts "Replacement was not confirmed: (#{ascii_replace_confirmation}). Booted to menu."
+      edOps()
     end
   else
-    "Invalid header. Please try again."
+    "Invalid header: (#{replace_header}). Please try again by entering one from the list."
     ascii_header_menu(filepath, header_filepath, headers, gets.chop)
   end
 end
@@ -156,12 +156,13 @@ def ascii_header_replace_menu(filepath, header_filepath)
       end
       #puts "i:#{i}, curr_head:#{curr_head}"
     end
-    puts "headers: #{headers}"
-    puts "Please enter the header of the dialogue you would like to change (ie 01_01_BLOT_01)"
+    puts "Listed below are all possible dialogue headers found in this chapter"
+    puts headers
+    puts "Please enter the header of the dialogue you would like to change (ie. 01_01_BLOT_01)"
     replace_header = gets.chop
     ascii_header_menu(filepath, header_filepath, headers, replace_header)
   else
-    puts "Could not read the file."
+    puts "Your file at (#{header_filepath}) could not be located. Please try again"
     ascii_header_replace_menu(filepath, gets.chop)
   end
 end
@@ -224,23 +225,24 @@ def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, 
   #puts command_new_data.unpack('H*')[0]
 
   File.write(command_filepath, command_new_data)
-  puts "Replaced cameo. (main file is now command file)"
-  menu(command_filepath)
+  puts "Replaced cameo."
+  #should give option to keep editing with current files, instead of booting straight to menu HERE!
+  edOps()
 end
 
 def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
-  puts "Are you sure you want to change the cameo at #{picked_header} to #{picked_cameo} in #{File.basename(command_filepath)}? Y/N"
+  puts "Are you sure you want to change the cameo at (#{picked_header}) to (#{picked_cameo}) in #{File.basename(command_filepath)}? (Y)"
   confirm = gets.chop
   if confirm == "y" || confirm == "Y"
     six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, headers)
   else
-    "Did not confirm. (init file replaced with command)"
-    menu(command_filepath)
+    puts "Replacement was not confirmed: (#{confirm}). Booted to menu."
+    edOps()
   end
 end
 
 def six_picked_header(command_filepath, header_filepath, picked_header, headers)
-  puts "Please enter your preferred cameo (ie. 07)"
+  puts "Please enter the hex id of the cameo you would like to substitute for the cameo in #{picked_header} (ie. 07)"
   picked_cameo = gets.chop
   #should check valid cameo here, but since a list has not yet been procured, advance.
   six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
@@ -289,14 +291,15 @@ def six_header(command_filepath, header_filepath)
     #puts "i:#{i}, curr_head:#{curr_head}"
   end
   #got headers
-  puts "headers: #{headers}"
-  puts "Please enter your preferred header (ie. 01_01_INTRO_01)"
+  puts "Listed below are all possible dialogue headers found in this chapter"
+  puts headers
+  puts "Please enter the header of the dialogue you would like to change (ie. 01_01_INTRO_01)"
   picked_header = gets.chop
 
   if headers.include? picked_header #checks if input is one in headers[]
     six_picked_header(command_filepath, header_filepath, picked_header, headers)
   else
-    puts "Invalid header"
+    puts "Invalid header: (#{picked_header}). Please try again by entering one from the list."
     six_header(command_filepath, header_filepath)
   end
 end
@@ -307,7 +310,7 @@ def six_command(command_filepath)
   if File.exists?(header_filepath)
     six_header(command_filepath, header_filepath)
   else
-    puts "Invalid header filepath"
+    puts "Your file at (#{header_filepath}) could not be located. Please try again"
     six_command(command_filepath)
   end
 end
@@ -319,133 +322,87 @@ def six()
   if File.exists?(command_filepath)
     six_command(command_filepath)
   else
-    puts "Invalid command filepath"
+    puts "Your file at (#{command_filepath}) could not be located. Please try again"
     six()
   end
 end
 
-def start()
-  puts "Please enter the filepath of the dialogue (ie chapterX_language.str)" #change to name of the dialogue file when data/ forced
-
-  filepath = gets.chop #add data/ eventually
-
-  if File.exists?(filepath)
-    filechars = File.size(filepath)
-    puts "Opened #{File.basename(filepath)} [#{filechars} bytes]"
-    #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
-    menu(filepath)
-  else
-    puts "Your file at (#{filepath}) could not be located. Please try again"
-    start()
-  end
-end
-
-def menu(filepath)
-  puts "Press 1 for automatic ASCII editing"
-  puts "Press 2 for automatic hex editing"
-  puts "Press 3 to view ASCII file data"
-  puts "Press 4 to view hex file data"
-  puts "Press 5 to change the dialogue file"
-  puts "Press 6 to change dialogue cameo"
+def edOps()
+  puts "Press 1 to edit dialogue text"
+  puts "Press 2 to edit dialogue cameos"
   puts "Press any other button to quit"
 
-  file_edit_option = gets.chop
-
-  if file_edit_option == "1"
-    puts "Would you like to use the chapter header to replace ASCII Y/N"
-    puts "(Using the header is less likely to glitch the game, although it will not work for chapter 7)"
-    ascii_file_edit_option = gets.chop
-
-    if ascii_file_edit_option == "y" || ascii_file_edit_option == "Y"
-      puts "Please enter the filepath of the header (ie chapterX_header.str)"
-      header_filepath = gets.chop
-
-      ascii_header_replace_menu(filepath, header_filepath)
-    else #non-header auto ascii replace
-      puts "Please enter the ASCII code you would like to change"
-      replaced_ascii = gets.chop
-
-      puts "Please enter the ASCII code you would like to replace #{replaced_ascii} with"
-      new_ascii = gets.chop
-
-      puts "Replacing all #{replaced_ascii} in #{File.basename(filepath)} with #{new_ascii}, is this ok? Y/N"
-      ascii_replace_confirmation = gets.chop
-
-      if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
-        replaceAscii(filepath, replaced_ascii, new_ascii)
-      else
-        puts "Replacement was not confirmed."
-        menu(filepath)
-      end
-    end
-  elsif file_edit_option == "2"
-    puts "Please enter the hex code you would like to change"
-    replaced_hex = gets.chop
-
-    puts "Please enter the hex code you would like to replace #{replaced_hex} with"
-    new_hex = gets.chop
-
-    puts "Replacing all #{replaced_hex} in #{File.basename(filepath)} with #{new_hex}, is this ok? Y/N"
-    hex_replace_confirmation = gets.chop
-
-    if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
-      hexreplace_filedata = File.read(filepath)
-      hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
-      puts "Successfully replaced hex data..."
-      File.write(filepath, hexreplace_newfiledata)
-      puts "Successfully wrote new data to file..."
-      puts "--ASCII view--"
-      puts "#{hexreplace_newfiledata}"
+  edit_option = gets.chop
+  if edit_option == "1"
+    one()
+  elsif edit_option == "2"
+    two()
+  else
+    puts "Are you sure you want to quit? (Y)"
+    quit_confirm = gets.chop
+    if quit_confirm == "y" || quit_confirm == "Y"
+      puts "Exited the program"
     else
-      puts "Replacement was not confirmed."
-      menu(filepath)
-    end
-  elsif file_edit_option == "3"
-    #viewAscii()
-    puts "--ASCII view--"
-    #file_data = File.foreach(filepath) { |line| puts line }
-    file_data = File.binread(filepath)
-    puts file_data
-    puts "--ASCII view--"
-    menu(filepath)
-  elsif file_edit_option == "4"
-    #viewHex()
-    puts "--HEX view--"
-    file_readable_hexdata = [];
-    hexline=""
-    number = 0 #used for counting where the next hex pair should be placed
-    file_hexdata = File.binread(filepath)
-    file_hexdata.unpack('H*')[0].scan(/../).each {|item|
-      hexline = hexline + padEnd(item)
-      number = number + 1
-      #after the 16th hexpair, start next line
-      if number == 16
-        file_readable_hexdata.push(hexline)
-        hexline=""
-        number = 0
-      end
-    }
-    file_readable_hexdata.push(hexline) #writes last line if last line has <16 hex pairs
-
-    file_readable_hexdata.each { |item|
-      puts item
-    }
-
-    puts "--HEX view--"
-    menu(filepath)
-  elsif file_edit_option == "5"
-    start()
-  elsif file_edit_option == "6"
-    six()
-  else 
-   puts "Are you sure you would like to quit? Y/N" 
-    answer = gets.chop
-    if answer == "y" || answer == "Y"
-      puts "Exited the program."
-    else
-      menu(filepath)
+      edOps()
     end
   end
-end #<end of menu()
+end
 
-start()
+def one()
+  puts "Please enter the filepath of the dialogue (ie chapterX_language.str)"
+  dialogue_filepath = gets.chop
+
+  if File.exists?(dialogue_filepath)
+    dialogue_filechars = File.size(dialogue_filepath)
+    puts "Opened #{File.basename(dialogue_filepath)} [#{dialogue_filechars} bytes]"
+    #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
+    one_dialogue(dialogue_filepath)
+  else
+    puts "Your file at (#{dialogue_filepath}) could not be located. Please try again"
+    one()
+  end
+end
+
+def one_dialogue(dialogue_filepath)
+  puts "Would you like to use the chapter header to edit dialogue Y/N"
+  puts "Using the header will only change one dialogue at a time,"
+  puts "Not using the header will allow for changing all instances of a word"
+  puts "(Using the header is less likely cause a glitch, although it will not work for chapter 7)"
+  puts "*Changing character count in non-header mode is the easiest way to brick dialogue"
+  ascii_file_edit_option = gets.chop
+
+  if ascii_file_edit_option == "y" || ascii_file_edit_option == "Y"
+    puts "Please enter the filepath of the header (ie chapterX_header.str)"
+    header_filepath = gets.chop
+
+    ascii_header_replace_menu(dialogue_filepath, header_filepath)
+  elsif ascii_file_edit_option == "n" || ascii_file_edit_option == "N" #non-header auto ascii replace
+    puts "Please enter the dialogue you would like to change exactly as it appears in-game"
+    replaced_ascii = gets.chop
+
+    puts "Please enter the dialogue you would like to replace (#{replaced_ascii}) with"
+    new_ascii = gets.chop
+
+    puts "Replacing all (#{replaced_ascii}) in #{File.basename(filepath)} with (#{new_ascii}), is this ok? (Y)"
+    ascii_replace_confirmation = gets.chop
+
+    if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
+      replaceAscii(filepath, replaced_ascii, new_ascii)
+      #ask if you would like to replace more or exit instead of booting to menu HERE!
+      edOps()
+    else
+      puts "Replacement was not confirmed, booted to menu."
+      edOps()
+    end
+  else
+    "Recieved an invalid answer (#{ascii_file_edit_option}), needs to be (Y) or (N)"
+    one_dialogue(dialogue_filepath)
+  end
+end
+
+def two()
+  six()
+end
+
+puts "Booted."
+edOps()
