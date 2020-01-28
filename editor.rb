@@ -5,7 +5,7 @@ end
 def padTo(num, input)
   if input.length > num
     while input.length > num
-      input.chop
+      input = input.chop
     end
     return input
   elsif input.length < num
@@ -18,14 +18,46 @@ def padTo(num, input)
   end
 end
 
+def hexPadTo(num, input)
+  puts "num:#{num}, nwn:#{num.to_i(16)},"#{"}" int:#{num.unpack('H*')[0].to_i}"
+  num = num.to_i(16)
+  num = num * 2
+
+  if input.length > num
+    while input.length > num
+      puts input.length
+      input = input.chop.chop
+    end
+    return [input].pack('H*')
+  elsif input.length < num
+    while input.length < num
+      puts "#{input.length}, #{input}"
+      input = input + "20"
+    end
+    return [input].pack('H*')
+  else
+    return [input].pack('H*')
+  end
+end
+
 def replaceAscii(replace_filepath, replaced_ascii, new_ascii)
-  asciireplace_filedata = File.read(replace_filepath)
+  asciireplace_filedata = File.binread(replace_filepath) #added bin
   asciireplace_newfiledata = asciireplace_filedata.gsub(replaced_ascii.to_s, new_ascii.to_s)
   #puts "Successfully replaced ascii data..."
   File.write(replace_filepath, asciireplace_newfiledata)
   puts "Successfully wrote new data to file..."
   #puts "--ASCII view--"
   #puts "#{asciireplace_newfiledata}"
+end
+
+def replaceHex(filepath, replaced_hex, new_hex)
+    hexreplace_filedata = File.binread(filepath) #added bin
+    hexreplace_newfiledata = hexreplace_filedata.gsub([replaced_hex].pack('H*'), [new_hex].pack('H*'))
+    #puts "Successfully replaced hex data..."
+    File.write(filepath, hexreplace_newfiledata)
+    puts "Successfully wrote new data to file..."
+    #puts "--ASCII view--"
+    #puts "#{hexreplace_newfiledata}"
 end
 
 def ascii_header_menu(filepath, header_filepath, headers, replace_header)
@@ -164,6 +196,145 @@ def ascii_header_replace_menu(filepath, header_filepath)
   else
     puts "Your file at (#{header_filepath}) could not be located. Please try again"
     ascii_header_replace_menu(filepath, gets.chop)
+  end
+end
+
+def hex_header_menu(filepath, header_filepath, headers, replace_header)
+  if headers.include? replace_header
+    replace_index = -1
+    headers.each { |i|
+      replace_index = replace_index + 1
+      if i == replace_header
+        break
+      end
+    }
+    #puts "Replacing dialogue ##{replace_index}"
+    #go through dialogue, match one to header, and get character limit from it's "spacer tag"
+    log_data = File.binread(filepath) #doesn't stop at 1A on Windows if using binread
+    logs = []
+    log_heads = []
+    charlims = []
+    last_i = ""
+    last_ii = ""
+    last_it = ""
+    curr_log = ""
+    curr_loghead = ""
+    collecting_log = 0
+    collecting_loghead = 5
+
+    # do last i, last last i to make sure you are getting 00 XX(!00) 00 XX(!00) 00
+    #copy-paste begins
+    log_data.split("").each do |i| #iterates over each character in log_data
+      if i.unpack('H*')[0] == "00" && collecting_log > 0
+        curr_log.slice!(0, 1) #easily removes the u/0000 that starts each dialogue otherwise
+        logs.push(curr_log)
+        curr_log=""
+        collecting_log = 0
+      end
+      if i.unpack('H*')[0] == "00"
+        if last_i == "00"
+          curr_loghead = ""
+        elsif curr_loghead == "" && collecting_log == 0
+          collecting_loghead = 5
+        end
+      end
+      if last_i == "00" && i.unpack('H*')[0] != "00" && curr_loghead.length == 2
+        charlims.push((i.unpack('H*')[0]))
+      end
+      if last_i != "00" && i.unpack('H*')[0] == "00" && curr_loghead.length == 8
+        collecting_log=5
+        collecting_loghead=0
+        curr_log=""
+        curr_loghead=""
+      end
+      last_it = last_ii
+      last_ii = last_i
+      if collecting_loghead > 0
+        last_i = i.unpack('H*')[0]
+        curr_loghead = curr_loghead + i.unpack('H*')[0]
+      elsif collecting_log > 0
+        last_i = i
+        curr_log = curr_log + i
+      end
+      #puts "i:#{i}, curr_loghead:#{curr_loghead}, curr_log:#{curr_log}, col_l:#{collecting_log}, col_lh:#{collecting_loghead}"
+    end
+    #puts "log_heads: #{log_heads}" #blank?
+    #puts "charlims: #{charlims}"
+    #puts "logs: #{logs}"
+    #copy-paste ends
+    puts "Please enter the hex you would like to substitute for the hex in #{replace_header}"
+    puts "Limit is #{charlims[replace_index]} chars (hex), enter less: excess is padded with spaces, enter more: excess is deleted"
+    new_hex = gets.chop
+
+    puts "Replacing hex in (#{replace_header}) in #{File.basename(filepath)} with (#{new_hex}) [#{new_hex.length.to_s(16)} chars (hex)], is this ok?  (Y)"
+    hex_replace_confirmation = gets.chop
+
+    if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
+      #puts replace_index
+      replaceHex(filepath, logs[replace_index].unpack('H*')[0], hexPadTo(charlims[replace_index], new_hex).unpack('H*')[0])
+      puts "Replaced #{logs[replace_index].unpack('H*')[0]} with #{hexPadTo(charlims[replace_index], new_hex).unpack('H*')[0]}"
+      edOps()
+    else
+      puts "Replacement was not confirmed: (#{hex_replace_confirmation}). Booted to menu."
+      edOps()
+    end
+  else
+    "Invalid header: (#{replace_header}). Please try again by entering one from the list."
+    hex_header_menu(filepath, header_filepath, headers, gets.chop)
+  end
+end
+
+def hex_header_replace_menu(filepath, header_filepath)
+  if File.exists?(header_filepath)
+    header_filechars = File.size(header_filepath)
+    puts "Opened #{File.basename(header_filepath)} [#{header_filechars} bytes]"
+
+    header_data = File.binread(header_filepath) #doesn't stop at 1A on Windows if using binread
+    headers = []
+    # do last i, last last i to make sure you are getting 0X_0X_X*X_0X
+    last_i = ""
+    last_ii = ""
+    last_it = ""
+    curr_head = ""
+    collecting_header = 0
+    #puts header_data
+    header_data.split("").each do |i| #iterates over each character in header_data
+      if i == "0"
+        if curr_head == ""
+          collecting_header = 5
+        elsif last_i == "_" && last_it != "0"
+          collecting_header = 2
+        end
+      end
+      if last_ii == "0" && i != "_" && curr_head.length == 2
+        collecting_header=0
+        curr_head=""
+      end
+      last_it = last_ii
+      last_ii = last_i
+      last_i = i
+      if collecting_header > 0
+        curr_head = curr_head + i
+        if collecting_header == 1 || collecting_header == 2
+          if !headers.include? curr_head
+            collecting_header = collecting_header - 1
+            if collecting_header == 0
+              headers.push(curr_head)
+              curr_head=""
+            end
+          end
+        end
+      end
+      #puts "i:#{i}, curr_head:#{curr_head}"
+    end
+    puts "Listed below are all possible dialogue headers found in this chapter"
+    puts headers
+    puts "Please enter the header of the dialogue you would like to change (ie. 01_01_BLOT_01)"
+    replace_header = gets.chop
+    hex_header_menu(filepath, header_filepath, headers, replace_header)
+  else
+    puts "Your file at (#{header_filepath}) could not be located. Please try again"
+    hex_header_replace_menu(filepath, gets.chop)
   end
 end
 
@@ -328,8 +499,9 @@ def six()
 end
 
 def edOps()
-  puts "Press 1 to edit dialogue text"
+  puts "Press 1 to edit dialogue in plaintext"
   puts "Press 2 to edit dialogue cameos"
+  puts "Press 3 to edit dialogue in hexadecimal"
   puts "Press any other button to quit"
 
   edit_option = gets.chop
@@ -337,6 +509,8 @@ def edOps()
     one()
   elsif edit_option == "2"
     two()
+  elsif edit_option == "3"
+    three()
   else
     puts "Are you sure you want to quit? (Y)"
     quit_confirm = gets.chop
@@ -402,6 +576,57 @@ end
 
 def two()
   six()
+end
+
+def three()
+  puts "Please enter the filepath of the dialogue (ie chapterX_language.str)"
+  dialogue_filepath = gets.chop
+
+  if File.exists?(dialogue_filepath)
+    dialogue_filechars = File.size(dialogue_filepath)
+    puts "Opened #{File.basename(dialogue_filepath)} [#{dialogue_filechars} bytes]"
+    #Menu navigation begins here, replace with a function for multiple edits rather than restarting the program eventually
+    three_dialogue(dialogue_filepath)
+  else
+    puts "Your file at (#{dialogue_filepath}) could not be located. Please try again"
+    three()
+  end
+end
+
+def three_dialogue(dialogue_filepath)
+  puts "Would you like to use the chapter header to edit dialogue Y/N"
+  puts "Using the header will only change one dialogue at a time,"
+  puts "Not using the header will allow for changing all instances of a word"
+  puts "(Using the header is less likely cause a glitch, although it will not work for chapter 7)"
+  puts "*Changing character count in non-header mode is the easiest way to brick dialogue"
+  file_edit_option = gets.chop
+
+  if file_edit_option == "y" || file_edit_option == "Y"
+    puts "Please enter the filepath of the header (ie chapterX_header.str)"
+    header_filepath = gets.chop
+    hex_header_replace_menu(dialogue_filepath, header_filepath)
+  elsif file_edit_option == "n" || file_edit_option == "N" #non-header auto ascii replace
+    puts "Please enter the hex you would like to change exactly as it appears in-game"
+    replaced_hex = gets.chop
+
+    puts "Please enter the hex you would like to replace (#{replaced_hex}) with"
+    new_hex = gets.chop
+
+    puts "Replacing all (#{replaced_hex}) in #{File.basename(filepath)} with (#{new_hex}), is this ok? (Y)"
+    hex_replace_confirmation = gets.chop
+
+    if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
+      replaceHex(dialogue_filepath, replaced_hex, new_hex)
+      #ask if you would like to replace more or exit instead of booting to menu HERE!
+      edOps()
+    else
+      puts "Replacement was not confirmed, booted to menu."
+      edOps()
+    end
+  else
+    "Recieved an invalid answer (#{file_edit_option}), needs to be (Y) or (N)"
+    three_dialogue(dialogue_filepath)
+  end
 end
 
 puts "Booted."
