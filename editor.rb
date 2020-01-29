@@ -134,7 +134,17 @@ def ascii_header_menu(filepath, header_filepath, headers, replace_header)
       #puts replace_index
       replaceAscii(filepath, logs[replace_index], padTo(charlims[replace_index], new_ascii))
       puts "Replaced #{logs[replace_index]} with #{padTo(charlims[replace_index], new_ascii)}"
-      edOps()
+      puts "Press 1 to continue working with the same command and header files"
+      puts "Press 2 to continue replacing cameos, but change files"
+      puts "Press any other button to return to the menu"
+      cont_choice = gets.chop
+      if cont_choice == "1"
+        one_dialogue(filepath, header_filepath) #add more ops?
+      elsif cont_choice == "2"
+        one()
+      else
+        edOps()
+      end
     else
       puts "Replacement was not confirmed: (#{ascii_replace_confirmation}). Booted to menu."
       edOps()
@@ -273,7 +283,17 @@ def hex_header_menu(filepath, header_filepath, headers, replace_header)
       #puts replace_index
       replaceHex(filepath, logs[replace_index].unpack('H*')[0], hexPadTo(charlims[replace_index], new_hex).unpack('H*')[0])
       puts "Replaced #{logs[replace_index].unpack('H*')[0]} with #{hexPadTo(charlims[replace_index], new_hex).unpack('H*')[0]}"
-      edOps()
+      puts "Press 1 to continue working with the same command and header files"
+      puts "Press 2 to continue replacing cameos, but change files"
+      puts "Press any other button to return to the menu"
+      cont_choice = gets.chop
+      if cont_choice == "1"
+        three_dialogue(command_filepath, header_filepath)
+      elsif cont_choice == "2"
+        three()
+      else
+        edOps()
+      end
     else
       puts "Replacement was not confirmed: (#{hex_replace_confirmation}). Booted to menu."
       edOps()
@@ -397,8 +417,17 @@ def six_confirm(command_filepath, header_filepath, picked_header, picked_cameo, 
 
   File.write(command_filepath, command_new_data)
   puts "Replaced cameo."
-  #should give option to keep editing with current files, instead of booting straight to menu HERE!
-  edOps()
+  puts "Press 1 to continue working with the same command and header files"
+  puts "Press 2 to continue replacing cameos, but change files"
+  puts "Press any other button to return to the menu"
+  cont_choice = gets.chop
+  if cont_choice == "1"
+    six_header(command_filepath, header_filepath)
+  elsif cont_choice == "2"
+    two()
+  else
+    edOps()
+  end
 end
 
 def six_picked_cameo(command_filepath, header_filepath, picked_header, picked_cameo, headers)
@@ -557,13 +586,22 @@ def one_dialogue(dialogue_filepath)
     puts "Please enter the dialogue you would like to replace (#{replaced_ascii}) with"
     new_ascii = gets.chop
 
-    puts "Replacing all (#{replaced_ascii}) in #{File.basename(filepath)} with (#{new_ascii}), is this ok? (Y)"
+    puts "Replacing all (#{replaced_ascii}) in #{File.basename(dialogue_filepath)} with (#{new_ascii}), is this ok? (Y)"
     ascii_replace_confirmation = gets.chop
 
     if ascii_replace_confirmation == "y" || ascii_replace_confirmation == "Y"
-      replaceAscii(filepath, replaced_ascii, new_ascii)
-      #ask if you would like to replace more or exit instead of booting to menu HERE!
-      edOps()
+      replaceAscii(dialogue_filepath, replaced_ascii, new_ascii)
+      puts "Press 1 to continue working with the same dialogue file"
+      puts "Press 2 to continue replacing dialogue, but change file"
+      puts "Press any other button to return to the menu"
+      cont_choice = gets.chop
+      if cont_choice == "1"
+        one_dialogue(dialogue_filepath) #maybe add more choice for header vs without rather than Y/Ning every time
+      elsif cont_choice == "2"
+        one()
+      else
+        edOps()
+      end
     else
       puts "Replacement was not confirmed, booted to menu."
       edOps()
@@ -612,13 +650,22 @@ def three_dialogue(dialogue_filepath)
     puts "Please enter the hex you would like to replace (#{replaced_hex}) with"
     new_hex = gets.chop
 
-    puts "Replacing all (#{replaced_hex}) in #{File.basename(filepath)} with (#{new_hex}), is this ok? (Y)"
+    puts "Replacing all (#{replaced_hex}) in #{File.basename(dialogue_filepath)} with (#{new_hex}), is this ok? (Y)"
     hex_replace_confirmation = gets.chop
 
     if hex_replace_confirmation == "y" || hex_replace_confirmation == "Y"
       replaceHex(dialogue_filepath, replaced_hex, new_hex)
-      #ask if you would like to replace more or exit instead of booting to menu HERE!
-      edOps()
+      puts "Press 1 to continue working with the same dialogue file"
+      puts "Press 2 to continue replacing dialogue, but change file"
+      puts "Press any other button to return to the menu"
+      cont_choice = gets.chop
+      if cont_choice == "1"
+        three_dialogue(dialogue_filepath) #maybe add more choice for header vs without rather than Y/Ning every time
+      elsif cont_choice == "2"
+        three()
+      else
+        edOps()
+      end
     else
       puts "Replacement was not confirmed, booted to menu."
       edOps()
